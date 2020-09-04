@@ -155,7 +155,7 @@ filter_tonality <- function(query, value = NULL, from = NULL, to = NULL) {
 
 
 term_filter <- function(query, var, terms) {
-  res <- paste0(var, ":(", paste(terms, collapse = " "), ")")
+  res <- paste0(var, ":(", enc(paste(terms, collapse = " ")), ")")
   query$filters <- c(query$filters, list(res))
   query
 }

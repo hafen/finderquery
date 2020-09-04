@@ -10,7 +10,7 @@ run <- function(query) {
   } else if (inherits(query, "query_fetch")) {
     run_query_fetch(query)
   } else if (inherits(query, "query_facet")) {
-    # run_query_facet(query)
+    run_query_facet(query)
   }
 }
 
@@ -25,13 +25,15 @@ get_query <- function(query) {
   } else if (inherits(query, "query_fetch")) {
     qry <- build_query_fetch(query)
   } else {
-    qry <- ""
-    # qry <- build_query_facet(query)
+    qry <- build_query_facet(query)
   }
 
   qry
 }
 
+#' @importFrom curl curl_download curl_fetch_memory
+#' @importFrom xml2 read_xml as_list xml_text xml_find_first write_xml
+#' @importFrom jsonlite toJSON
 run_query_str <- function(query) {
   if (is.null(query$path)) {
     dest <- tempfile(fileext = ".xml")
@@ -46,11 +48,10 @@ run_query_str <- function(query) {
 
   res <- xml2::read_xml(dest)
 
+  # we can't use xml_to_list since we don't know what kind of content
+  # a string query will return (could be facet, fetch, etc.)
   if (query$format == "list")
     return(xml2::as_list(res))
-
-  if (query$format == "json")
-    return(jsonlite::toJSON(xml2::as_list(res)))
 
   return(res)
 }
@@ -70,6 +71,7 @@ run_query_fetch <- function(query) {
   bb <- rawToChar(aa$content)
 
   res <- xml2::read_xml(bb)
+  res <- remove_fields(res, query)
 
   tot <- as.integer(xml2::xml_text(xml2::xml_find_first(res, ".//numFound")))
   curs <- xml2::xml_text(xml2::xml_find_first(res, ".//nextCursorMark"))
@@ -77,15 +79,12 @@ run_query_fetch <- function(query) {
   # if there is no cursor, then results are not paginated... return
   if (is.na(curs)) {
     if (query$format == "file") {
-      cat(bb, file = dest)
+      xml2::write_xml(res, file = dest)
       return(dest)
     }
 
     if (query$format == "list")
-      return(xml2::as_list(res))
-
-    if (query$format == "json")
-      return(jsonlite::toJSON(xml2::as_list(res)))
+      return(xml_to_list(res))
 
     return(res)
   }
@@ -95,7 +94,8 @@ run_query_fetch <- function(query) {
 
   counter <- 1
   cum_hits <- cur_hits
-  cat(bb, file = sprintf("%s/out%04d.json", query$path, counter))
+  xml2::write_xml(res,
+    file = sprintf("%s/out%04d.xml", query$path, counter))
 
   sz_str <- min(query$size, cur_hits)
   denom <- tot_hits
@@ -116,19 +116,20 @@ run_query_fetch <- function(query) {
       stop("There was an error with the query: ", qry2)
     bb <- rawToChar(aa$content)
     res <- xml2::read_xml(bb)
+    res <- remove_fields(res, query)
     tot <- as.integer(xml2::xml_text(xml2::xml_find_first(res, ".//numFound")))
     curs <- xml2::xml_text(xml2::xml_find_first(res, ".//nextCursorMark"))
     cur_hits <- as.integer(xml2::xml_text(xml2::xml_find_first(res, ".//rows")))
 
     if (cur_hits > 0) {
-      cat(bb, file = sprintf("%s/out%04d.json", query$path, counter))
+      xml2::write_xml(res,
+        file = sprintf("%s/out%04d.xml", query$path, counter))
       cum_hits <- cum_hits + cur_hits
       denom <- tot_hits
-      cum_str <- cum_hits
+      cum_str <- min(cum_hits, tot_hits)
       if (query$max > 0) {
         cum_hits <- min(cum_hits, query$max)
         denom <- min(query$max, tot_hits)
-        cum_str <- min(cum_hits, tot_hits)
       }
       message(min(cum_hits, tot_hits), " documents fetched (",
         round(100 * cum_str / denom), "%)...")
@@ -138,11 +139,41 @@ run_query_fetch <- function(query) {
   return(query$path)
 }
 
+# facet queries always read into memory and transform to a nice format
+run_query_facet <- function(query) {
+  if (is.null(query$facet))
+    stop("Must specify faceting.")
+
+  qry <- build_query_facet(query)
+  aa <- curl::curl_fetch_memory(build_url(query$con$con, qry))
+  if (aa$status_code != 200)
+    stop("There was an error with the query: ", qry)
+  bb <- rawToChar(aa$content)
+
+  res <- xml2::read_xml(bb)
+
+  if (query$facet$type == "field") {
+    fld <- query$facet$field
+    a <- res %>%
+      xml2::xml_find_all(paste0("//lst[@name='", fld, "']")) %>%
+      xml2::xml_children() %>%
+      xml2::as_list()
+
+    res <- tibble::tibble(
+      tmp = unlist(lapply(a, function(x) attr(x, "name"))),
+      n = as.numeric(unlist(a))
+    )
+    names(res)[1] <- fld
+  }
+
+  res
+}
+
 build_url <- function(con, str) {
   paste0(con, str)
 }
 
-build_query_fetch <- function(query) {
+build_filter_string <- function(query) {
   str <- ""
 
   if (length(query$filters) > 0) {
@@ -150,9 +181,15 @@ build_query_fetch <- function(query) {
       paste(collapse = "&")
   }
 
+  str
+}
+
+build_query_fetch <- function(query) {
+  str <- build_filter_string(query)
+
   page <- ""
   rows <- query$max
-  if (query$max > query$size || query$max == 0) {
+  if (query$max > query$size || query$max < 0) {
     rows <- query$size
     page <- "&cursorMark=*"
     query$sort <- c(query$sort, list("guid+asc"))
@@ -164,4 +201,40 @@ build_query_fetch <- function(query) {
 
   paste0("op=search&q=*:*", ifelse(str == "", "", "&"), str,
     "&rows=", rows, page)
+}
+
+build_query_facet <- function(query) {
+  if (query$facet$type == "field") {
+    pars <- query$facet
+    pars$type <- NULL
+    pars <- paste0(paste0("facet.", names(pars)), "=", unlist(pars))
+    qry <- paste0("op=search&q=*:*&rows=0&facet=true&native=true&",
+      paste(pars, collapse = "&"))
+  }
+
+  filter_str <- build_filter_string(query)
+  if (filter_str != "")
+    qry <- paste0(qry, "&", filter_str)
+
+  qry
+}
+
+#' @importFrom xml2 xml_remove
+remove_fields <- function(x, query) {
+  if (is.null(query$select))
+    return(x)
+
+  exclude <- setdiff(valid_fields(), query$select)
+  for (val in exclude) {
+    nodes <- xml2::xml_find_all(x, paste0("//", val))
+    xml2::xml_remove(nodes, free = TRUE)
+    nodes <- xml2::xml_find_all(x, paste0("//iso:", val))
+    xml2::xml_remove(nodes, free = TRUE)
+    nodes <- xml2::xml_find_all(x, paste0("//gphin:", val))
+    xml2::xml_remove(nodes, free = TRUE)
+    nodes <- xml2::xml_find_all(x, paste0("//emm:", val))
+    xml2::xml_remove(nodes, free = TRUE)
+  }
+
+  x
 }

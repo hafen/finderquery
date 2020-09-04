@@ -7,7 +7,7 @@
 run(query)
 }
 \arguments{
-\item{query}{a [query_fetch()], [query_facet()] or [query_str()] object}
+\item{query}{a \code{\link[=query_fetch]{query_fetch()}}, \code{\link[=query_facet]{query_facet()}} or \code{\link[=query_str]{query_str()}} object}
 }
 \description{
 Execute a query

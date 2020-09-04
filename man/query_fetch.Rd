@@ -4,24 +4,27 @@
 \alias{query_fetch}
 \title{Initialize a document fetch query}
 \usage{
-query_fetch(con, str, path = NULL, max = 0, size = 10000,
-  format = c("list", "json", "xml", "file"))
+query_fetch(con, str, path = NULL, max = 10, size = 10000,
+  format = c("list", "xml", "file"))
 }
 \arguments{
-\item{con}{A finder connection object from [finder_connect()].}
+\item{con}{A finder connection object from \code{\link[=finder_connect]{finder_connect()}}.}
 
-\item{str}{A SOLR query string, e.g. "op=search&q=*:*&rows=0".}
+\item{str}{A SOLR query string, e.g. "op=search&q=\emph{:}&rows=0".}
 
 \item{path}{An optional directory in which to place downloaded results
-(required when `format="file"`).}
+(required when \code{format="file"}).}
 
-\item{max}{The maximum number of documents to fetch.}
+\item{max}{The maximum number of documents to fetch. Set to 0 to fetch all.
+When fetching all it is a good idea to first fetch with only a few
+documents and use \code{\link[=n_docs]{n_docs()}} to get a sense of how many will be pulled.}
 
 \item{size}{The number of documents to fetch in each batch (max is 10000).}
 
-\item{format}{One of "list", "json", "xml", "file". In the case of "file",
+\item{format}{One of "list", "xml", "file". In the case of "file",
 The path to the file will be returned. In all other cases, an object
-with the fetched data will be returned in the format specified.}
+with the fetched data will be returned in the format specified. List
+results are converted using \code{\link[=xml_to_list]{xml_to_list()}}.}
 }
 \description{
 Initialize a document fetch query

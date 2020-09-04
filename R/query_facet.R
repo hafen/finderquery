@@ -1,0 +1,90 @@
+#' Initialize a document fetch query
+#'
+#' @param con A finder connection object from [finder_connect()].
+#' @export
+query_facet <- function(con) {
+  structure(list(
+    con = con,
+    filters = list()
+  ), class = c("es_query", "query_facet"))
+}
+
+#' Title
+#' @param query ccc
+#' @param sort Controls how faceted results are sorted.
+# sort: Sort the constraints by count (highest count first).
+# index: Return the constraints sorted in their index order (lexicographic by indexed term). For terms in the ASCII range, this will be alphabetically sorted.
+#' @param limit Controls how many constraints should be returned for each facet.
+#' @param offset Specifies an offset into the facet results at which to begin displaying facets.
+#' @param mincount Specifies the minimum counts required for a facet field to be included in the response.
+#' @export
+facet_by <- function(query,
+  field, limit = -1, sort = c("count", "index"), mincount = 0, offset = 0
+) {
+  check_class(query, c("query_facet", "query_fetch"), "filter_source")
+  sort <- match.arg(sort)
+
+  if (!is.null(query$facet))
+    message("Replacing previously facet specification")
+
+  query$facet <- list(
+    type = "field",
+    field = field,
+    limit = limit,
+    sort = sort,
+    mincount = mincount,
+    offset = offset
+  )
+
+  query
+}
+
+
+# all existing values for source, with corresponding count
+#   rows=0 facet=true facet.field=source facet.limit=-1 facet.mincount=1 facet.method=fcs native=true *:*
+# aa <- query_str(con, "op=search&q=*%3A*&facet.field=source&rows=0&facet=true&facet.limit=-1&facet.mincount=1&facet.method=fcs&native=true", format = "xml") %>%
+#   run()
+
+# top 10 (based on count) existing values for source, with corresponding count, sorted by count
+#   rows=0 facet=true facet.field=source facet.limit=10 facet.sort=count facet.method=fcs native=true *:*
+# aa <- query_str(con, "op=search&q=*%3A*&facet.sort=count&facet.field=source&rows=0&facet=true&facet.limit=10&facet.method=fcs&native=true", format = "xml") %>%
+#   run()
+
+# all existing values for source, with corresponding count, for rssitem from Germany, in German, published in the last 7 days
+
+# rows=0 facet=true facet.field=source facet.limit=-1 facet.method=fcs native=true +country:DE +language:de fq=pubdate:[NOW/DAY-7DAY TO *]
+
+# aa <- query_str(con, "op=search&q=%2Bcountry%3ADE%20%2Blanguage%3Ade&facet.field=source&fq=pubdate%3A%5BNOW%2FDAY-7DAY%20TO%20*%5D&rows=0&facet=true&facet.limit=-1&facet.method=fcs&native=true", format = "xml") %>%
+#   run()
+
+
+
+# #' Title
+# #' @export
+# facet_range <- function(con, start, end, gap) {
+
+# }
+
+# #' Title
+# #' @export
+# facet_date_range <- function(con, start, end, gap) {
+
+# }
+
+#    /HOUR
+#       ... Round to the start of the current hour
+#    /DAY
+#       ... Round to the start of the current day
+#    +2YEARS
+#       ... Exactly two years in the future from now
+#    -1DAY
+#       ... Exactly 1 day prior to now
+#    /DAY+6MONTHS+3DAYS
+#       ... 6 months and 3 days in the future from the start of
+#           the current day
+#    +6MONTHS+3DAYS/DAY
+#       ... 6 months and 3 days in the future from now, rounded
+#           down to nearest day
+ 
+# (Multiple aliases exist for the various units of time (ie: MINUTE and MINUTES; MILLI, MILLIS, MILLISECOND, and MILLISECONDS.) The complete list can be found by inspecting the keySet of CALENDAR_UNITS)
+

@@ -4,13 +4,14 @@
 #' @param str A SOLR query string, e.g. "op=search&q=*:*&rows=0".
 #' @param path An optional directory in which to place downloaded results
 #'   (required when `format="file"`).
-#' @param format One of "list", "json", "xml", "file". In the case of "file",
+#' @param format One of "list", "xml", "file". In the case of "file",
 #'   The path to the file will be returned. In all other cases, an object
-#'   with the fetched data will be returned in the format specified.
+#'   with the fetched data will be returned in the format specified. List 
+#'   results are converted using [xml_to_list()].
 #' @export
 query_str <- function(
   con, str, path = NULL,
-  format = c("list", "json", "xml", "file")
+  format = c("list", "xml", "file")
 ) {
   format <- match.arg(format)
 
