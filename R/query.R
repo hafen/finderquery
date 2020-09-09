@@ -15,7 +15,7 @@ run <- function(query) {
 }
 
 #' Get the query string for a query
-#' @param query TODO
+#' @param query a [query_fetch()], [query_facet()], or [query_str()] object
 #' @export
 get_query <- function(query) {
   check_class(query, c("query_fetch", "query_facet", "query_str"), "get_query")
@@ -46,7 +46,7 @@ run_query_str <- function(query) {
   if (query$format == "file")
     return(dest)
 
-  res <- xml2::read_xml(dest)
+  res <- xml2::read_xml(dest, options = c("NOBLANKS", "HUGE"))
 
   # we can't use xml_to_list since we don't know what kind of content
   # a string query will return (could be facet, fetch, etc.)
@@ -70,7 +70,7 @@ run_query_fetch <- function(query) {
     stop("There was an error with the query: ", qry)
   bb <- rawToChar(aa$content)
 
-  res <- xml2::read_xml(bb)
+  res <- xml2::read_xml(bb, options = c("NOBLANKS", "HUGE"))
   res <- remove_fields(res, query)
 
   tot <- as.integer(xml2::xml_text(xml2::xml_find_first(res, ".//numFound")))
@@ -90,21 +90,21 @@ run_query_fetch <- function(query) {
   }
 
   tot_hits <- tot
-  cur_hits <- as.integer(xml2::xml_text(xml2::xml_find_first(res, ".//rows")))
 
   counter <- 1
-  cum_hits <- cur_hits
+  cum_hits <- tot_hits
   xml2::write_xml(res,
     file = sprintf("%s/out%04d.xml", query$path, counter))
 
-  sz_str <- min(query$size, cur_hits)
+  sz_str <- min(query$size, tot_hits)
   denom <- tot_hits
-  cum_str <- cum_hits
+  cum_str <- min(cum_hits, tot_hits)
   if (query$max > 0) {
     sz_str <- min(sz_str, query$max)
     denom <- min(query$max, tot_hits)
     cum_str <- min(cum_hits, query$max)
   }
+
   message(sz_str, " documents fetched (",
     round(100 * cum_str / denom), "%)...")
 
@@ -115,7 +115,7 @@ run_query_fetch <- function(query) {
     if (aa$status_code != 200)
       stop("There was an error with the query: ", qry2)
     bb <- rawToChar(aa$content)
-    res <- xml2::read_xml(bb)
+    res <- xml2::read_xml(bb, options = c("NOBLANKS", "HUGE"))
     res <- remove_fields(res, query)
     tot <- as.integer(xml2::xml_text(xml2::xml_find_first(res, ".//numFound")))
     curs <- xml2::xml_text(xml2::xml_find_first(res, ".//nextCursorMark"))
@@ -136,6 +136,16 @@ run_query_fetch <- function(query) {
     }
   }
 
+  if (query$try_read && tot_hits <= 100000) {
+    message("Reading into a list...")
+    ff <- list.files(query$path, full.names = TRUE)
+    tmp <- lapply(ff, function(f) {
+      res <- xml2::read_xml(f, options = c("NOBLANKS", "HUGE"))
+      xml_to_list(res)
+    })
+    return(unlist(tmp, recursive = FALSE))
+  }
+
   return(query$path)
 }
 
@@ -150,7 +160,7 @@ run_query_facet <- function(query) {
     stop("There was an error with the query: ", qry)
   bb <- rawToChar(aa$content)
 
-  res <- xml2::read_xml(bb)
+  res <- xml2::read_xml(bb, options = c("NOBLANKS", "HUGE"))
 
   if (query$facet$type == "field") {
     fld <- query$facet$field
@@ -163,6 +173,22 @@ run_query_facet <- function(query) {
       tmp = unlist(lapply(a, function(x) attr(x, "name"))),
       n = as.numeric(unlist(a))
     )
+    names(res)[1] <- fld
+  }
+
+  if (query$facet$type == "date_range") {
+    fld <- query$facet$field
+    a <- res %>%
+      xml2::xml_find_all(paste0("//lst[@name='", fld, "']")) %>%
+      xml2::xml_child() %>%
+      xml2::xml_children() %>%
+      xml2::as_list()
+
+    res <- tibble::tibble(
+      tmp = unlist(lapply(a, function(x) attr(x, "name"))),
+      n = as.numeric(unlist(a))
+    )
+    res$tmp <- as.POSIXct(res$tmp)
     names(res)[1] <- fld
   }
 
@@ -199,17 +225,29 @@ build_query_fetch <- function(query) {
     str <- paste0(str, "&sort=", paste(unlist(query$sort), collapse = ","))
   }
 
-  paste0("op=search&q=*:*", ifelse(str == "", "", "&"), str,
+  qstr <- ifelse(is.null(query$filter_text), "*:*", query$filter_text)
+
+  paste0("op=search&q=", qstr, ifelse(str == "", "", "&"), str,
     "&rows=", rows, page)
 }
 
 build_query_facet <- function(query) {
+  qstr <- ifelse(is.null(query$filter_text), "*:*", query$filter_text)
+
   if (query$facet$type == "field") {
     pars <- query$facet
     pars$type <- NULL
     pars <- paste0(paste0("facet.", names(pars)), "=", unlist(pars))
-    qry <- paste0("op=search&q=*:*&rows=0&facet=true&native=true&",
+    qry <- paste0("op=search&q=", qstr, "&rows=0&facet=true&native=true&",
       paste(pars, collapse = "&"))
+  } else if (query$facet$type == "date_range") {
+    pars <- query$facet
+    field <- pars$field
+    pars$field <- NULL
+    pars$type <- NULL
+    pars <- paste0(paste0("facet.range.", names(pars)), "=", unlist(lapply(pars, enc)))
+    qry <- paste0("op=search&q=", qstr, "&rows=0&facet=true&native=true&",
+      "facet.range=", field, "&", paste(pars, collapse = "&"))
   }
 
   filter_str <- build_filter_string(query)
@@ -224,7 +262,7 @@ remove_fields <- function(x, query) {
   if (is.null(query$select))
     return(x)
 
-  exclude <- setdiff(valid_fields(), query$select)
+  exclude <- setdiff(valid_select_fields(), query$select)
   for (val in exclude) {
     nodes <- xml2::xml_find_all(x, paste0("//", val))
     xml2::xml_remove(nodes, free = TRUE)

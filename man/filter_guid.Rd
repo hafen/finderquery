@@ -2,13 +2,13 @@
 % Please edit documentation in R/filter.R
 \name{filter_guid}
 \alias{filter_guid}
-\title{Filter bbb}
+\title{Filter guid}
 \usage{
-filter_guid(query, id)
+filter_guid(query, value)
 }
 \arguments{
-\item{query}{ccc}
+\item{query}{a \code{\link[=query_fetch]{query_fetch()}} or \code{\link[=query_facet]{query_facet()}} object}
 }
 \description{
-Filter bbb
+Filter guid
 }

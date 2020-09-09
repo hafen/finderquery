@@ -2,13 +2,13 @@
 % Please edit documentation in R/filter.R
 \name{filter_pubdate}
 \alias{filter_pubdate}
-\title{Filter bbb}
+\title{Filter pubdate}
 \usage{
 filter_pubdate(query, from = NULL, to = NULL, on = NULL)
 }
 \arguments{
-\item{query}{ccc}
+\item{query}{a \code{\link[=query_fetch]{query_fetch()}} or \code{\link[=query_facet]{query_facet()}} object}
 }
 \description{
-Filter bbb
+Filter pubdate
 }

@@ -19,15 +19,28 @@ query_fetch <- function(
   if (size > 10000)
     size <- 10000
 
+  try_read <- FALSE
+
   format <- match.arg(format)
 
-  if (max > size && format != "file") {
+  if ((max > size) && format != "file") {
       message("Forcing format to be 'file' due to the large number of ",
         "documents being retrieved.")
       format <- "file"
     if (is.null(path))
       stop("Must provide a path argument when retrieving so many documents.",
         call. = FALSE)
+  }
+
+  if (max < 0 && format != "file") {
+    path <- tempfile()
+    dir.create(path)
+    message("Since an indeterminate number of rows is being returned, ",
+      "and a path has not been specified, the results will be temporarly ",
+      "stored here: ", path, " and if there are not more than 100k documents, ",
+      "will be read in.")
+    format <- "file"
+    try_read <- TRUE
   }
 
   if (!is.null(path)) {
@@ -45,6 +58,8 @@ query_fetch <- function(
     path = path,
     max = max,
     format = format,
-    filters = list()
+    try_read = try_read,
+    filters = list(),
+    filter_text = NULL
   ), class = c("es_query", "query_fetch"))
 }

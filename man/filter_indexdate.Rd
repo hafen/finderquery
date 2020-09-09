@@ -2,13 +2,13 @@
 % Please edit documentation in R/filter.R
 \name{filter_indexdate}
 \alias{filter_indexdate}
-\title{Filter bbb}
+\title{Filter indexdate}
 \usage{
 filter_indexdate(query, from = NULL, to = NULL, on = NULL)
 }
 \arguments{
-\item{query}{ccc}
+\item{query}{a \code{\link[=query_fetch]{query_fetch()}} or \code{\link[=query_facet]{query_facet()}} object}
 }
 \description{
-Filter bbb
+Filter indexdate
 }

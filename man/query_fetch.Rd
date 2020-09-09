@@ -4,19 +4,17 @@
 \alias{query_fetch}
 \title{Initialize a document fetch query}
 \usage{
-query_fetch(con, str, path = NULL, max = 10, size = 10000,
+query_fetch(con, path = NULL, max = 10, size = 10000,
   format = c("list", "xml", "file"))
 }
 \arguments{
 \item{con}{A finder connection object from \code{\link[=finder_connect]{finder_connect()}}.}
 
-\item{str}{A SOLR query string, e.g. "op=search&q=\emph{:}&rows=0".}
-
 \item{path}{An optional directory in which to place downloaded results
 (required when \code{format="file"}).}
 
-\item{max}{The maximum number of documents to fetch. Set to 0 to fetch all.
-When fetching all it is a good idea to first fetch with only a few
+\item{max}{The maximum number of documents to fetch. Set to <0 to fetch
+all. When fetching all it is a good idea to first fetch with only a few
 documents and use \code{\link[=n_docs]{n_docs()}} to get a sense of how many will be pulled.}
 
 \item{size}{The number of documents to fetch in each batch (max is 10000).}

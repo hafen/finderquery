@@ -7,7 +7,7 @@
 get_query(query)
 }
 \arguments{
-\item{query}{TODO}
+\item{query}{a \code{\link[=query_fetch]{query_fetch()}}, \code{\link[=query_facet]{query_facet()}}, or \code{\link[=query_str]{query_str()}} object}
 }
 \description{
 Get the query string for a query

@@ -2,13 +2,15 @@
 % Please edit documentation in R/filter.R
 \name{filter_text}
 \alias{filter_text}
-\title{Filter bbb}
+\title{Filter based on text found in title, description, or text, including
+translations}
 \usage{
-filter_text(query)
+filter_text(query, text)
 }
 \arguments{
-\item{query}{ccc}
+\item{query}{a \code{\link[=query_fetch]{query_fetch()}} or \code{\link[=query_facet]{query_facet()}} object}
 }
 \description{
-Filter bbb
+Filter based on text found in title, description, or text, including
+translations
 }

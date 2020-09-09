@@ -2,13 +2,13 @@
 % Please edit documentation in R/filter.R
 \name{filter_duplicate}
 \alias{filter_duplicate}
-\title{Filter bbb}
+\title{Filter duplicate}
 \usage{
 filter_duplicate(query, bool = FALSE)
 }
 \arguments{
-\item{query}{ccc}
+\item{query}{a \code{\link[=query_fetch]{query_fetch()}} or \code{\link[=query_facet]{query_facet()}} object}
 }
 \description{
-Filter bbb
+Filter duplicate
 }

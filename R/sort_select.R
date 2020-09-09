@@ -1,9 +1,8 @@
-
 #' Specify field to sort on
 #' @export
 sort_by <- function(query, field, asc = TRUE) {
-  if (!tolower(field) %in% tolower(valid_fields()))
-    stop("'sort_by' field: ", field, " is not a valid field name.",
+  if (!tolower(field) %in% tolower(queryable_fields()))
+    stop("'sort_by' field: ", field, " is not a queryable/sortable field name.",
       call. = FALSE)
 
   query$sort <- c(query$sort,
@@ -11,18 +10,17 @@ sort_by <- function(query, field, asc = TRUE) {
   query
 }
 
-
 #' Specify fields to return in the results
 #' @export
 select_fields <- function(query, fields = NULL) {
   if (length(query$select) > 0)
     message("Overwriting previously-specified fields to select")
   if (!is.null(fields)) {
-    nu <- setdiff(fields, valid_fields())
+    nu <- setdiff(fields, valid_select_fields())
     if (length(nu) > 0)
       message("Ignoring invalid fields specified in 'select_fields': ",
         paste(nu, collapse = ", "))
-    fields <- intersect(fields, valid_fields())
+    fields <- intersect(fields, valid_select_fields())
   }
   query$select <- fields
   query
@@ -30,9 +28,14 @@ select_fields <- function(query, fields = NULL) {
 
 #' Valid fields that can be selected
 #' @export
-valid_fields <- function() {
-  c("title", "link", "description", "contentType", "pubDate", "source", 
-    "language", "guid", "category", "favicon", "entity", "georss", 
-    "fullgeo", "tonality", "text", "quote", "enclosure", "translate", 
-    "keyword", "location", "relevance")
+valid_select_fields <- function() {
+  c("category", "contentType", "description", "enclosure", "entity", 
+    "favicon", "fullgeo", "georss", "guid", "keyword", "language", 
+    "link", "location", "pubDate", "quote", "relevance", "source", 
+    "text", "title", "tonality", "translate")
 }
+
+# # get a feel for valid fields found in the data
+# res <- query_fetch(con, max = 5000) %>%
+#   run()
+# sort(unique(unlist(lapply(res, names))))

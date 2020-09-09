@@ -1,3 +1,14 @@
+#' List of queryable fields
+#' @export
+queryable_fields <- function() {
+  c("language", "category", "country", "source", "quotecategory", "duplicate",
+    "tonality", "entityid", "guid", "indexdate", "pubdate", "quotetext",
+    "text", "quotewho", "quoteabout", "georssid")
+}
+
+# setdiff(queryable_fields(), tolower(valid_select_fields()))
+# setdiff(tolower(valid_select_fields()), queryable_fields())
+
 #' Get a vector of all unique "language" values
 #' @export
 valid_languages <- function(con) {
@@ -21,6 +32,28 @@ valid_countries <- function(con) {
 valid_sources <- function(con) {
   get_valid_vals(con, "source")
 }
+
+# #' Get a vector of all unique "quotewho" values
+# #' @export
+# valid_quotewho <- function(con) {
+#   get_valid_vals(con, "quotewho")
+# }
+
+#' Get a vector of all unique "quotecategory" values
+#' @export
+valid_quotecategory <- function(con) {
+  get_valid_vals(con, "quotecategory")
+}
+
+#' Get a vector of all unique "duplicate" values
+#' @export
+valid_duplicate <- function(con) {
+  get_valid_vals(con, "duplicate")
+}
+
+# quotewho # very large output ~179k values
+# quoteabout # very large output ~179k values
+# georssid # ~105k values
 
 #' @importFrom xml2 xml_children as_list
 get_valid_vals <- function(con, fld) {
