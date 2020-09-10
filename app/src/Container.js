@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import Multiselect from './inputs/Multiselect';
 import DateInput from './inputs/Date';
 import Fields from './inputs/Fields';
+import DownloadDialog from './DownloadDialog';
 import RangeSlider from './inputs/RangeSlider';
 import useDebounce from './useDebounce';
 import {
@@ -30,6 +31,16 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     marginTop: 25,
     marginBottom: 5
+  },
+  queryStrRow: {
+    width: 500,
+    display: 'flex',
+    textAlign: 'left',
+    background: '#eee',
+    fontFamily: 'monospace',
+    fontSize: 16,
+    padding: 15,
+    wordBreak: 'break-word'
   },
   title: {
     flexGrow: 1,
@@ -58,7 +69,10 @@ const useStyles = makeStyles((theme) => ({
     left: 0,
     right: 0,
     background: '#eee',
-    lineHeight: '52px'
+    lineHeight: '52px',
+    display: 'flex',
+    justifyContent: 'center',
+    placeItems: 'center'
   },
   progress: {
     position: 'fixed',
@@ -69,6 +83,11 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     left: 18,
     bottom: 18
+  },
+  downloadMsg: {
+    position: 'fixed',
+    bottom: 18,
+    right: 18
   }
 }));
 
@@ -88,8 +107,13 @@ export default function Container() {
   }
 
   const [nDocs, setNDocs] = useState(null)
+  const [queryStr, setQueryStr] = useState('')
+
   const [nDocsLoading, setNDocsLoading] = useState(false)
   const [nDocsLoaded, setNDocsLoaded] = useState(false)
+  const [docsDownloading, setDocsDownloading] = useState(false)
+  // TODO: use this to add a "download" button or a "close" button
+  // const [docsDownloaded, setDocsDownloaded] = useState(false)
   const [hasError, setHasError] = useState(false)
 
   const [stCategory, setStCategory] = useState([]);          // mselect
@@ -116,6 +140,7 @@ export default function Container() {
     const jj = (x) => x.length === 0 ? '' : `["${x.join('","')}"]`;
     const fmt = (x) => x === null ? null : format(x, 'yyyy-MM-dd');
     const dd = (x, y) => `["${fmt(x)}","${fmt(y)}"]`;
+  
     const url = `http://localhost:8000/get_ndocs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}`;
     // &fields=${JSON.stringify(stFields)}
     
@@ -123,10 +148,10 @@ export default function Container() {
     fetch(url)
       .then(response => response.json())
       .then(data => {
-        setNDocs(data);
+        setNDocs(data.n_docs);
+        setQueryStr(data.query);
         setNDocsLoading(false);
         setNDocsLoaded(true);
-        console.log(data);
       })
       .catch(() => {
         setHasError(true)
@@ -146,6 +171,27 @@ export default function Container() {
     dbEntityid,
     dbGeorssid,
     dbGuid]);
+
+  const downloadDocs = () => {
+    const jj = (x) => x.length === 0 ? '' : `["${x.join('","')}"]`;
+    const fmt = (x) => x === null ? null : format(x, 'yyyy-MM-dd');
+    const dd = (x, y) => `["${fmt(x)}","${fmt(y)}"]`;
+  
+    const url = `http://localhost:8000/download_docs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}&fields=${JSON.stringify(stFields)}&path=/tmp/asdf`;
+    
+    setDocsDownloading(true)
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        setNDocs(data.n_docs);
+        setQueryStr(data.query);
+        setDocsDownloading(false);
+      })
+      .catch(() => {
+        setHasError(true)
+        setDocsDownloading(false);
+      });
+  }
 
   return (
     <div className={classes.root}>
@@ -213,14 +259,33 @@ export default function Container() {
             <Fields update={updateFields} selectedFields={stFields} />
           </div>
         </div>
+        <div>
+          <div className={classes.inputFieldsRow}>
+            Query
+          </div>
+          <div className={classes.queryStrRow}>
+            {queryStr}
+          </div>        
+        </div>
       </div>
       <div className={classes.footer}>
         <Button variant="contained" color="primary">
           Run Query
         </Button>
+        <div>&nbsp;</div>
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={!(nDocs && nDocs <= 100000)}
+          onClick={downloadDocs}
+        >
+          Download
+        </Button>
       </div>
       {nDocsLoading && (<CircularProgress className={classes.progress} size={30} />)}
       {nDocsLoaded && (<div className={classes.ndocs}>{`${nDocs} documents`}</div>)}
+      {!(nDocs && nDocs <= 100000) && (<div className={classes.downloadMsg}>Cannot download unless &lt;100k documents are in query</div>)}
+      <DownloadDialog open={docsDownloading} path="/tmp/asdf" />
     </div>
   );
 }

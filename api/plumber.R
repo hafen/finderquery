@@ -22,9 +22,9 @@ cors <- function(req, res) {
 
 build_query <- function(
   category, country, language, source, duplicate, pubdate, indexdate, text,
-  tonality, entityid, georssid, guid, fields
+  tonality, entityid, georssid, guid, fields, path
 ) {
-  qry <- query_fetch(con, max = 0)
+  qry <- query_fetch(con, max = 0, path = path, format = "xml")
 
   up <- function(x) unlist(jsonlite::parse_json(x))
 
@@ -99,12 +99,34 @@ function(
 ) {
   qry <- build_query(
     category, country, language, source, duplicate, pubdate, indexdate, text,
-    tonality, entityid, georssid, guid, fields = NULL
+    tonality, entityid, georssid, guid, fields = NULL, path = NULL
   )
-
-  Sys.sleep(2)
 
   message(get_query(qry))
 
-  return(1000)
+  return(list(
+    n_docs = ifelse(runif(1) < 0.5, 10000, 10000000),
+    query = paste0(qry$con$con, get_query(qry))
+  ))
+}
+
+#* Download documents
+#* @serializer unboxedJSON
+#* @get /download_docs
+function(
+  category, country, language, source, duplicate, pubdate, indexdate, text,
+  tonality, entityid, georssid, guid, fields, path
+) {
+  if (!dir.exists(path))
+    dir.create(path)
+
+  qry <- build_query(
+    category, country, language, source, duplicate, pubdate, indexdate, text,
+    tonality, entityid, georssid, guid, fields = fields, path = path
+  )
+
+  Sys.sleep(10)
+  # finderquery::run(qry)
+
+  return(TRUE)
 }
