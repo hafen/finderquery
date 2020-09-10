@@ -1,3 +1,3 @@
 library(plumber)
-r <- plumb("api/plumber.R")
+r <- plumb("plumber.R")
 r$run(port = 8000)

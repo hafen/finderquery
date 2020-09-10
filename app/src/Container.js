@@ -6,10 +6,12 @@ import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { format } from 'date-fns';
 import Multiselect from './inputs/Multiselect';
 import DateInput from './inputs/Date';
 import Fields from './inputs/Fields';
 import RangeSlider from './inputs/RangeSlider';
+import useDebounce from './useDebounce';
 import {
   fields, vCountries, vLanguages, vCategories, vSources, vDuplicate
 } from './options.js';
@@ -47,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
     bottom: 60,
     left: 0,
     right: 0,
-    overflowY: 'auto'
+    overflow: 'auto'
   },
   footer: {
     height: 55,
@@ -105,27 +107,18 @@ export default function Container() {
   const [stGeorssid, setStGeorssid] = useState('');          // text input
   const [stGuid, setStGuid] = useState('');                  // text input
 
-  useEffect(() => {
-    const res = {
-      stCategory,
-      stCountry,
-      stLanguage,
-      stSource,
-      stDuplicate,
-      stIndexdate1,
-      stIndexdate2,
-      stPubdate1,
-      stPubdate2,
-      stText,
-      stTonality,
-      stEntityid,
-      stGeorssid,
-      stGuid
-    };
-    const jj = (x) => x.join(',');
-    const url = `http://localhost:8000/get_ndocs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${stPubdate1},${stPubdate2}&indexdate=${stIndexdate1},${stIndexdate2}&text=${stText}&tonality=${jj(stTonality)}&entityid=${stEntityid}&georssid=${stGeorssid}&guid=${stGuid}`;
-    console.log(url);
+  const dbText = useDebounce(stText, 500);
+  const dbEntityid = useDebounce(stEntityid, 500);
+  const dbGeorssid = useDebounce(stGeorssid, 500);
+  const dbGuid = useDebounce(stGuid, 500);
 
+  useEffect(() => {
+    const jj = (x) => x.length === 0 ? '' : `["${x.join('","')}"]`;
+    const fmt = (x) => x === null ? null : format(x, 'yyyy-MM-dd');
+    const dd = (x, y) => `["${fmt(x)}","${fmt(y)}"]`;
+    const url = `http://localhost:8000/get_ndocs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}`;
+    // &fields=${JSON.stringify(stFields)}
+    
     setNDocsLoading(true)
     fetch(url)
       .then(response => response.json())
@@ -148,11 +141,11 @@ export default function Container() {
     stIndexdate2,
     stPubdate1,
     stPubdate2,
-    stText,
+    dbText,
     stTonality,
-    stEntityid,
-    stGeorssid,
-    stGuid]);
+    dbEntityid,
+    dbGeorssid,
+    dbGuid]);
 
   return (
     <div className={classes.root}>

@@ -1,4 +1,4 @@
-Package: xmlquery
+Package: finderquery
 Title: Utilities for building EIOS Finder queries
 Version: 0.1.0
 Authors@R: 
