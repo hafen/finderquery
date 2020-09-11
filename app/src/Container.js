@@ -116,6 +116,8 @@ export default function Container() {
   // const [docsDownloaded, setDocsDownloaded] = useState(false)
   const [hasError, setHasError] = useState(false)
 
+  const [queryName, setQueryName] = useState('');
+
   const [stCategory, setStCategory] = useState([]);          // mselect
   const [stCountry, setStCountry] = useState([]);            // mselect
   const [stLanguage, setStLanguage] = useState([]);          // mselect
@@ -148,6 +150,7 @@ export default function Container() {
     fetch(url)
       .then(response => response.json())
       .then(data => {
+        console.log(data);
         setNDocs(data.n_docs);
         setQueryStr(data.query);
         setNDocsLoading(false);
@@ -177,14 +180,12 @@ export default function Container() {
     const fmt = (x) => x === null ? null : format(x, 'yyyy-MM-dd');
     const dd = (x, y) => `["${fmt(x)}","${fmt(y)}"]`;
   
-    const url = `http://localhost:8000/download_docs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}&fields=${JSON.stringify(stFields)}&path=/tmp/asdf`;
+    const url = `http://localhost:8000/download_docs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}&fields=${JSON.stringify(stFields)}&path=/tmp/${queryName}`;
     
     setDocsDownloading(true)
     fetch(url)
       .then(response => response.json())
       .then(data => {
-        setNDocs(data.n_docs);
-        setQueryStr(data.query);
         setDocsDownloading(false);
       })
       .catch(() => {
@@ -203,6 +204,19 @@ export default function Container() {
         </Toolbar>
       </AppBar>
       <div className={classes.content}>
+        <div className={classes.inputRow}>
+          <TextField
+            required
+            error={queryName === ''}
+            fullWidth
+            label="Query name"
+            value={queryName}
+            onChange={(event) => {
+              setQueryName(event.target.value.replace(/\W/g, ''))
+            }}
+            variant="filled"
+          />
+        </div>
         <Multiselect label="Category" values={vCategories} setter={setStCategory} />
         <Multiselect label="Country" values={vCountries} setter={setStCountry} />
         <Multiselect label="Language" values={vLanguages} setter={setStLanguage} />
@@ -284,8 +298,11 @@ export default function Container() {
       </div>
       {nDocsLoading && (<CircularProgress className={classes.progress} size={30} />)}
       {nDocsLoaded && (<div className={classes.ndocs}>{`${nDocs} documents`}</div>)}
-      {!(nDocs && nDocs <= 100000) && (<div className={classes.downloadMsg}>Cannot download unless &lt;100k documents are in query</div>)}
-      <DownloadDialog open={docsDownloading} path="/tmp/asdf" />
+      <div className={classes.downloadMsg}>
+        {!(nDocs && nDocs <= 100000) && ("Cannot download unless <100k documents are in query.")}
+        {queryName === '' && (" Query needs a name.")}
+      </div>
+      <DownloadDialog open={docsDownloading} path={queryName} />
     </div>
   );
 }

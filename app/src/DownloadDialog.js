@@ -19,7 +19,7 @@ export default function DownloadDialog({ open, path }) {
       <DialogTitle id="alert-dialog-title">{"Doanloading documents"}</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
-          {`Documents are being downloaded to the following location: ${path}. This could take some time. This dialog will remain open until the download has completed.`}
+          {`Documents are being downloaded to the following location: /tmp/${path} on the server. This could take some time. This dialog will remain open until the download has completed.`}
         </DialogContentText>
       </DialogContent>
       {/* <DialogActions>

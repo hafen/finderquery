@@ -6,6 +6,7 @@ Sys.unsetenv("https_proxy")
 Sys.unsetenv("http_proxy")
 
 con <- finder_connect(Sys.getenv("FINDER_HOST"))
+dev_server <- as.logical(Sys.getenv("PLUMBER_DEV_SERVER", unset = FALSE))
 
 #' @filter cors
 cors <- function(req, res) {
@@ -22,9 +23,9 @@ cors <- function(req, res) {
 
 build_query <- function(
   category, country, language, source, duplicate, pubdate, indexdate, text,
-  tonality, entityid, georssid, guid, fields, path
+  tonality, entityid, georssid, guid, fields, path, max = 0, format = "list"
 ) {
-  qry <- query_fetch(con, max = 0, path = path, format = "xml")
+  qry <- query_fetch(con, max = max, path = path, format = format)
 
   up <- function(x) unlist(jsonlite::parse_json(x))
 
@@ -102,11 +103,17 @@ function(
     tonality, entityid, georssid, guid, fields = NULL, path = NULL
   )
 
-  message(get_query(qry))
+  if (dev_server) {
+    nd <- ifelse(runif(1) < 0.5, 10000, 10000000)
+  } else {
+    nd <- n_docs(finderquery::run(qry))
+  }
+
+  message(finderquery::get_query(qry))
 
   return(list(
-    n_docs = ifelse(runif(1) < 0.5, 10000, 10000000),
-    query = paste0(qry$con$con, get_query(qry))
+    n_docs = nd,
+    query = paste0(qry$con$con, finderquery::get_query(qry))
   ))
 }
 
@@ -117,16 +124,22 @@ function(
   category, country, language, source, duplicate, pubdate, indexdate, text,
   tonality, entityid, georssid, guid, fields, path
 ) {
+  # path <- paste0("/tmp/", path)
   if (!dir.exists(path))
     dir.create(path)
 
   qry <- build_query(
     category, country, language, source, duplicate, pubdate, indexdate, text,
-    tonality, entityid, georssid, guid, fields = fields, path = path
+    tonality, entityid, georssid, guid, fields = fields, path = path, max = -1,
+    format = "file"
   )
 
-  Sys.sleep(10)
-  # finderquery::run(qry)
+  if (dev_server) {
+    Sys.sleep(5)
+  } else {
+    finderquery::run(qry)
+  }
 
+  message("downloaded... ", path)
   return(TRUE)
 }
