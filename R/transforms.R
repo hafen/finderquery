@@ -12,7 +12,7 @@ xml_to_list <- function(x, fields = NULL) {
   # request (when the SolrQueryRequest object is created) and the completion 
   # of the request handler
   meta$QTime <- as.integer(meta$QTime)
-  meta$numFound <- as.integer(meta$numFound)
+  meta$numFound <- as.numeric(meta$numFound)
   meta$start <- as.integer(meta$start)
   meta$rows <- as.integer(meta$rows)
 
