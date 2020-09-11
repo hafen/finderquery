@@ -5,8 +5,23 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles((theme) => ({
+  path: {
+    background: '#eee',
+    fontFamily: 'monospace',
+    fontWeight: 600,
+    fontSize: 14
+  },
+  progress: {
+    marginBottom: 22
+  }
+}));
 
 export default function DownloadDialog({ open, path }) {
+  const classes = useStyles();
 
   return (
     <Dialog
@@ -16,10 +31,13 @@ export default function DownloadDialog({ open, path }) {
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">{"Doanloading documents"}</DialogTitle>
+      <DialogTitle id="alert-dialog-title">{"Downloading documents"}</DialogTitle>
       <DialogContent>
+        <LinearProgress className={classes.progress} color="secondary" />
         <DialogContentText id="alert-dialog-description">
-          {`Documents are being downloaded to the following location: /tmp/${path} on the server. This could take some time. This dialog will remain open until the download has completed.`}
+          {`Documents are being downloaded to `}
+          <span className={classes.path}>{`/tmp/${path}`}</span>
+          {` on the server. This could take some time. This dialog will remain open until the download has completed.`}
         </DialogContentText>
       </DialogContent>
       {/* <DialogActions>

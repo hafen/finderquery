@@ -147,6 +147,7 @@ export default function Container() {
     // &fields=${JSON.stringify(stFields)}
     
     setNDocsLoading(true)
+    setNDocsLoaded(false);
     fetch(url)
       .then(response => response.json())
       .then(data => {
@@ -283,10 +284,6 @@ export default function Container() {
         </div>
       </div>
       <div className={classes.footer}>
-        <Button variant="contained" color="primary">
-          Run Query
-        </Button>
-        <div>&nbsp;</div>
         <Button
           variant="contained"
           color="primary"
@@ -297,7 +294,7 @@ export default function Container() {
         </Button>
       </div>
       {nDocsLoading && (<CircularProgress className={classes.progress} size={30} />)}
-      {nDocsLoaded && (<div className={classes.ndocs}>{`${nDocs} documents`}</div>)}
+      {nDocsLoaded && typeof nDocs === 'number' && (<div className={classes.ndocs}>{`${nDocs.toLocaleString()} documents`}</div>)}
       <div className={classes.downloadMsg}>
         {!(nDocs && nDocs <= 100000) && ("Cannot download unless <100k documents are in query.")}
         {queryName === '' && (" Query needs a name.")}
