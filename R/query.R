@@ -92,7 +92,7 @@ run_query_fetch <- function(query) {
   tot_hits <- tot
 
   counter <- 1
-  cum_hits <- tot
+  cum_hits <- as.integer(xml2::xml_text(xml2::xml_find_first(res, ".//rows")))
   xml2::write_xml(res,
     file = sprintf("%s/out%04d.xml", query$path, counter))
 
