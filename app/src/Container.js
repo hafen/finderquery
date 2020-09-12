@@ -6,7 +6,9 @@ import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Checkbox from '@material-ui/core/Checkbox';
 import { format } from 'date-fns';
+import { useSnackbar } from 'notistack';
 import Multiselect from './inputs/Multiselect';
 import DateInput from './inputs/Date';
 import Fields from './inputs/Fields';
@@ -24,13 +26,16 @@ const useStyles = makeStyles((theme) => ({
   inputRow: {
     width: 500,
     display: 'flex',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    paddingRight: 20
   },
   inputFieldsRow: {
     width: 500,
     display: 'flex',
     marginTop: 25,
-    marginBottom: 5
+    marginBottom: 5,
+    alignItems: 'center',
+    paddingRight: 20
   },
   queryStrRow: {
     width: 500,
@@ -40,7 +45,8 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: 'monospace',
     fontSize: 16,
     padding: 15,
-    wordBreak: 'break-word'
+    wordBreak: 'break-word',
+    paddingRight: 20
   },
   title: {
     flexGrow: 1,
@@ -51,20 +57,36 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     flexWrap: 'wrap',
     flex: 'auto',
-    padding: 30,
-    '& > * + *': {
-      marginTop: theme.spacing(1),
-    },
-    position: 'absolute',
+    position: 'fixed',
     top: 60,
     bottom: 60,
     left: 0,
     right: 0,
-    overflow: 'auto'
+    overflow: 'auto',
+    // columns: '500px',
+    // columnFill: 'balance',
+    // marginTop: 60,
+    // marginBottom: 60,
+    padding: 30,
+    '& > * + *': {
+      marginTop: theme.spacing(1),
+    }
+  },
+  '@media screen and (max-width: 1090px)': {
+    content: {
+      flexDirection: 'row'
+    }
+  },
+  header: {
+    position: 'fixed',
+    left: 0,
+    top: 0,
+    right: 0,
+    zIndex: 10000
   },
   footer: {
     height: 55,
-    position: 'absolute',
+    position: 'fixed',
     bottom: 0,
     left: 0,
     right: 0,
@@ -88,11 +110,16 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     bottom: 18,
     right: 18
+  },
+  selectAll: {
+    color: 'darkgray'
   }
 }));
 
 export default function Container() {
   const classes = useStyles();
+
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const [stFields, setStFields] = useState(fields);
   const updateFields = (val) => {
@@ -102,6 +129,11 @@ export default function Container() {
       newState.push(val);
     } else {
       newState.splice(idx, 1);
+    }
+    if (newState.length === fields.length) {
+      setSelectAllFields(true);
+    } else {
+      setSelectAllFields(false);
     }
     setStFields(newState);
   }
@@ -115,6 +147,12 @@ export default function Container() {
   // TODO: use this to add a "download" button or a "close" button
   // const [docsDownloaded, setDocsDownloaded] = useState(false)
   const [hasError, setHasError] = useState(false)
+
+  const [selectAllFields, setSelectAllFields] = useState(true);
+  const selectAllChange = function() {
+    if (!selectAllFields) { setStFields(fields); } else { setStFields([]); };
+    setSelectAllFields(!selectAllFields);
+  }
 
   const [queryName, setQueryName] = useState('');
 
@@ -149,7 +187,14 @@ export default function Container() {
     setNDocsLoading(true)
     setNDocsLoaded(false);
     fetch(url)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          response.text().then(text => {
+            enqueueSnackbar(text, { variant: 'error' });
+          });
+        }
+        return response.json();
+      })
       .then(data => {
         console.log(data);
         setNDocs(data.n_docs);
@@ -157,7 +202,10 @@ export default function Container() {
         setNDocsLoading(false);
         setNDocsLoaded(true);
       })
-      .catch(() => {
+      .catch((err) => {
+        const msg = err.message === 'Failed to fetch'
+          ? 'Unable to connect to API' : err.message;
+        enqueueSnackbar(msg, { variant: 'error' });
         setHasError(true)
         setNDocsLoading(false)
       });
@@ -181,15 +229,36 @@ export default function Container() {
     const fmt = (x) => x === null ? null : format(x, 'yyyy-MM-dd');
     const dd = (x, y) => `["${fmt(x)}","${fmt(y)}"]`;
   
-    const url = `http://localhost:8000/download_docs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}&fields=${JSON.stringify(stFields)}&path=/tmp/${queryName}`;
-    
+    const url = `http://localhost:8000/download_docs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}&fields=${JSON.stringify(stFields)}&path=/tmp/__finder_downloads__/${queryName}`;
+
     setDocsDownloading(true)
     fetch(url)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          response.text().then(text => {
+            enqueueSnackbar(text, { variant: 'error' });
+          });
+        }
+        return response.json();
+      })
       .then(data => {
         setDocsDownloading(false);
+        enqueueSnackbar((
+          <div>
+            {`Query '${queryName}' success...`}
+            <Button href={`http://localhost:8000/static/${queryName}.zip`}>
+              Download
+            </Button>
+          </div>
+        ), { 
+          variant: 'success',
+          persist: true
+        });
       })
-      .catch(() => {
+      .catch((err) => {
+        const msg = err.message === 'Failed to fetch'
+          ? 'Unable to connect to API' : err.message;
+        enqueueSnackbar(msg, { variant: 'error' });
         setHasError(true)
         setDocsDownloading(false);
       });
@@ -197,13 +266,15 @@ export default function Container() {
 
   return (
     <div className={classes.root}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" className={classes.title}>
-            Finder Query Builder
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <div className={classes.header}>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography variant="h6" className={classes.title}>
+              Finder Query Builder
+            </Typography>
+          </Toolbar>
+        </AppBar>
+      </div>
       <div className={classes.content}>
         <div className={classes.inputRow}>
           <TextField
@@ -239,7 +310,7 @@ export default function Container() {
             onChange={(event) => setStText(event.target.value)}
           />
         </div>
-        <div className={classes.inputRow}>
+        <div className={classes.inputRow} >
           <RangeSlider value={stTonality} setter={setStTonality} />
         </div>
         <div className={classes.inputRow}>
@@ -268,7 +339,14 @@ export default function Container() {
         </div>
         <div>
           <div className={classes.inputFieldsRow}>
-            Document fields to return:
+            Document fields to return&nbsp;&nbsp;&nbsp;&nbsp;
+            <Checkbox
+              checked={selectAllFields}
+              name="all"
+              color="primary"
+              onChange={selectAllChange}  
+            />
+            <span className={classes.selectAll}>all</span>
           </div>
           <div className={classes.inputRow}>
             <Fields update={updateFields} selectedFields={stFields} />
@@ -287,16 +365,16 @@ export default function Container() {
         <Button
           variant="contained"
           color="primary"
-          disabled={!(nDocs && nDocs <= 100000)}
+          disabled={!(nDocs && nDocs <= 100000) || queryName === ''}
           onClick={downloadDocs}
         >
-          Download
+          Pull Documents
         </Button>
       </div>
       {nDocsLoading && (<CircularProgress className={classes.progress} size={30} />)}
       {nDocsLoaded && typeof nDocs === 'number' && (<div className={classes.ndocs}>{`${nDocs.toLocaleString()} documents`}</div>)}
       <div className={classes.downloadMsg}>
-        {!(nDocs && nDocs <= 100000) && ("Cannot download unless <100k documents are in query.")}
+        {!(nDocs && nDocs <= 100000) && ("Cannot run unless <100k documents are in query.")}
         {queryName === '' && (" Query needs a name.")}
       </div>
       <DownloadDialog open={docsDownloading} path={queryName} />

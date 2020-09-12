@@ -36,7 +36,7 @@ export default function DownloadDialog({ open, path }) {
         <LinearProgress className={classes.progress} color="secondary" />
         <DialogContentText id="alert-dialog-description">
           {`Documents are being downloaded to `}
-          <span className={classes.path}>{`/tmp/${path}`}</span>
+          <span className={classes.path}>{`/tmp/__finder_downloads__/${path}`}</span>
           {` on the server. This could take some time. This dialog will remain open until the download has completed.`}
         </DialogContentText>
       </DialogContent>

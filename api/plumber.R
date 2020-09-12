@@ -8,6 +8,9 @@ Sys.unsetenv("http_proxy")
 con <- finder_connect(Sys.getenv("FINDER_HOST"))
 dev_server <- as.logical(Sys.getenv("PLUMBER_DEV_SERVER", unset = FALSE))
 
+if (!dir.exists("/tmp/__finder_downloads__/"))
+  dir.create("/tmp/__finder_downloads__/")
+
 #' @filter cors
 cors <- function(req, res) {
   res$setHeader("Access-Control-Allow-Origin", "*")
@@ -104,7 +107,7 @@ function(
   )
 
   if (dev_server) {
-    nd <- ifelse(runif(1) < 0.5, 10000, 10000000)
+    nd <- ifelse(runif(1) < 0.8, 10000, 10000000)
   } else {
     nd <- n_docs(finderquery::run(qry))
   }
@@ -124,9 +127,11 @@ function(
   category, country, language, source, duplicate, pubdate, indexdate, text,
   tonality, entityid, georssid, guid, fields, path
 ) {
-  # path <- paste0("/tmp/", path)
   if (!dir.exists(path))
-    dir.create(path)
+    dir.create(path, recursive = TRUE)
+  ff <- list.files(path, full.names = TRUE)
+  if (length(ff) > 0)
+    unlink(ff)
 
   qry <- build_query(
     category, country, language, source, duplicate, pubdate, indexdate, text,
@@ -135,11 +140,20 @@ function(
   )
 
   if (dev_server) {
-    Sys.sleep(5)
+    Sys.sleep(2)
+    for (i in 1:5)
+      cat("test", file = file.path(path, sprintf("output%04d.xml", i)))
   } else {
     finderquery::run(qry)
   }
 
+  ff <- list.files(path)
+  zipfile <- file.path(dirname(path), paste0(basename(path), ".zip"))
+  withr::with_dir(path, utils::zip(zipfile, ff))
+
   message("downloaded... ", path)
   return(TRUE)
 }
+
+#* @assets /tmp/__finder_downloads__ /static
+list()

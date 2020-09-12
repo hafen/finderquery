@@ -104,7 +104,7 @@ export default function Multiselect({ values, label, current, setter }) {
   return (
     <Autocomplete
       multiple
-      style={{ width: 500 }}
+      style={{ width: 500, paddingRight: 20 }}
       classes={classes}
       disableListWrap
       ListboxComponent={ListboxComponent}
