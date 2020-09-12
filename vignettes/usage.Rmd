@@ -1,0 +1,383 @@
+---
+title: "Building Queries"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Building Queries}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Setup
+
+The first thing to do is to establish a connection with the Finder server. In our case, `10.49.4.6`.
+
+```{r setup}
+library(finderquery)
+
+con <- finder_connect("10.49.4.6")
+```
+
+This connection object is passed to queries so it knows where to go to run the query.
+
+Note that we can also specify the `primary_index`, which is the index used by default by queries we build unless we specify otherwise in the query. Here we are querying "eios-items" by default.
+
+Also, note that if you are working in an R console on the `.18` or `.19` machines, you may need to run the following for the Solr server to be reachable:
+
+```r
+Sys.unsetenv("NO_PROXY")
+Sys.unsetenv("HTTPS_PROXY")
+Sys.unsetenv("HTTP_PROXY")
+Sys.unsetenv("https_proxy")
+Sys.unsetenv("http_proxy")
+```
+
+# Queries
+
+## Overview
+
+Two major types of queries are currently supported by this package.
+
+1. **Fetch**: Documents are retrieved according to specified criteria, query initiated with `query_fetch()`
+1. **Facet**: Documents are counted by specified fields in the data, query initiated with `query_facet()`
+
+After a query is initiated, it can built upon by piping various operations:
+
+- `filter_*()`: filter on specified values of a field (*), for both fetch and facet queries
+- `facet_by()`: specify a field to facet by, only for facet queries
+- `facet_date_range()`: specify a date range facet, only for facet queries
+- `select_fields()`: specify fields to select in the returned documents, only for fetch queries
+- `sort_by()`: specify field by which to sort the returned documents, only for fetch queries.
+
+## Fetch queries
+
+Fetch queries simply retrieve documents based on filtering criteria.
+
+### Initiating a query
+
+A fetch query is initialized using `query_fetch()`, which takes as its primary argument the connection object.
+
+Additonal arguments include:
+
+- `max`: The maximum number of documents to return. The default is 10. If set to `-1`, the total number of documents that match the query parameters will be returned. Often it is is good to run a query with the default value of `max` or even `max = 0` to get a feel for how many documents are in the query before deciding to pull the full set of documents. Even when `max = 0` is set, the query result will include an indication of the total number of documents in the query. An example of this will be shown below. Setting `max = -1` (or anything less than 0) will result in all documents being pulled.
+- `format`: One of "list", "xml", or "file". The default is "list", in which case the documents are read into memory and converted to a more R-convenient list format using `list_to_xml()`. If "xml", the documents will be read into R and returned as an xml2 "xml_document" object. If "file", the xml file(s) will simply be downloaded and the path to the directory containing these files will be returned. Note that if `max = -1` and `format` is not "file", it will be forced to "file" (and a temporary directory will be used if not specified) since the number of documents returned could potentially be very large. After pulling all the documents, if the number of documents is small enough to read into memory in a manageable way (currently set at <=100k documents), the original `format` specification will be honored.
+- `path`: If `format = "file"`, the path for where to store the downloaded xml files can be specified. If not specified, a temporary directory will be used. The specified path should ideally be empty.
+- `size`: The number of documents to pull in each batch of pagination (see note below on pagination). The default is 10,000, which is the maximum allowed by Solr.
+
+**Note** that fetch queries automatically take care of [pagination](https://lucene.apache.org/solr/guide/6_6/pagination-of-results.html) using cursors to retrieve potentially very large sets of documents. The pagination limit is 10k documents, so iterative queries are run to fetch these in batches and piece them together upon retrieval.
+
+Initiating an "empty" query is as easy as the following:
+
+```{r}
+qry <- query_fetch(con)
+```
+
+The object `qry` can be passed on to other functions such as the `filter_*()` functions to further refine the query.
+
+At any point when constructing a query, the query object can either be passed to:
+- `get_query()`: prints out a Solr API call that can be inspected or pasted in a web browser to retrieve the results
+- `run()`: runs the query and returns the documents in the specified `format`
+
+To see our simple query:
+
+```{r}
+get_query(qry)
+```
+
+To run it:
+
+```r
+res <- run(qry)
+
+# inspect output
+str(res, 1)
+```
+
+Recall that the default fetch query returns 10 documents. We can see how many total documents are in the query by using a convenience function `n_docs()` on our output:
+
+```r
+n_docs(res)
+```
+
+<!-- Note that for some reason an empty query returns a smaller number of documents than is actually available in the document store. -->
+
+### Adding filters to fetch queries
+
+It is probably more desirable for a fetch query to pinpoint records of interest rather than to retrieve all documents. This can be done by adding filters to the query.
+
+Filtering is added by filter functions specified for each filterable field, each of which begins with `filter_` and ends with the field name being filtered.
+
+**Note** that filters can apply to both fetch and facet queries.
+
+#### Term filters
+
+##### `filter_category()`
+
+To filter 
+
+```r
+
+```
+
+valid_categories()
+
+
+##### filter_country()
+
+```r
+
+```
+
+
+valid_countries()
+
+
+##### filter_language()
+
+```r
+
+```
+
+
+valid_languages()
+
+
+##### filter_source()
+
+```r
+
+```
+
+valid_sources()
+
+
+##### filter_duplicate()
+
+```r
+
+```
+
+valid_duplicate()
+
+#### Text filter
+
+```r
+
+```
+
+filter_text()
+
+#### Date filters
+
+filter_pubdate()
+filter_indexdate()
+
+```r
+
+```
+
+
+#### Other filters
+
+filter_tonality()
+
+```r
+
+```
+
+filter_entityid()
+filter_georssid()
+filter_guid()
+
+```r
+
+```
+
+### Fetch output
+
+
+
+### Fetching to disk
+
+In the previous fetch examples, the return object `docs` has been a list format of the document content of the query.
+
+In a many cases we may wish to do a bulk download of many articles. If we specify a `path` argument to `query_fetch()`, the results will be written in batches to the specified directory.
+
+For example, to write our last query to disk, we specify a directory in our query initizilaztion. Also, note that to simulate scrolling, we specify each iteration of the query to retrieve 10 documents (instead of the default 10k documents) with the `size` argument. With this, we see that two files get written, one for each scroll.
+
+```r
+tf <- tempfile()
+dir.create(tf)
+docs <- query_fetch(con, path = tf, size = 10) %>%
+  filter_range("processedOnDate", from = "2020-03-10") %>%
+  filter_terms("affectedCountriesIso", c("US", "CA")) %>%
+  filter_match("fullText", "disease") %>%
+  run()
+
+list.files(docs)
+```
+
+### Specifying fields to sort on
+
+Another operation available only for fetch queries is `sort_docs()`, which allows you to specify fields to sort by as part of the fetch.
+
+For example:
+
+```r
+docs <- query_fetch(con, size = 10, max = 25) %>%
+  filter_range("processedOnDate", from = "2020-03-10") %>%
+  sort_docs("processedOnDate") %>%
+  run()
+
+sapply(docs, function(x) x$`_source`$processedOnDate)
+```
+
+
+### Specifying fields to return
+
+An operation available only for fetch queries, `select_fields()`, allows us to specify which fields should be returned for each document. This is useful of documents contain some fields that are very large and we don't want to include them in our results.
+
+To see what values are acceptable for a selectable field:
+
+```r
+selectable_fields(con)
+```
+
+For example, to return just the fields "source.countryIso" and "locations":
+
+```r
+docs <- query_fetch(con, size = 10, max = 25) %>%
+  filter_range("processedOnDate", from = "2020-03-10") %>%
+  select_fields(c("source.id", "triggers", "locations")) %>%
+  run()
+
+str(docs[[1]]$`_source`, 2)
+
+to_data_frame <- function(x) {
+  tmp <- lapply(x, function(a) a$`_source`)
+  tibble::as_data_frame()
+}
+```
+
+## Facet Queries
+
+Facet queries are constructed by doing the following:
+
+- Initiate a facet query using `query_facet()`
+- Build on this query by specifying combinations of:
+  - Fields to facet on using `agg_by_field()`
+  - Date binning using `agg_by_date()`
+
+### Initiating a Query
+
+To initiate a facet query, we use the function `query_facet()`, and pass it our connection object.
+
+```r
+query <- query_facet(con)
+```
+
+We can view the query's translation to an Elasticsearch search body string simply through printing the query.
+
+```r
+query
+```
+
+Here, of course, the query is empty as we haven't specified facet dimensions yet.
+
+Queries can be executed using the `run()` function.
+
+```r
+run(query)
+```
+
+Since the query is empty, nothing is returned.
+
+### Getting a List of Queryable Fields
+
+To begin specifying fields to facet on, it can be helpful to get a view of what fields are available to facet on. This can be done by passing the connection object to `queryable_fields().
+
+```r
+queryable_fields(con)
+```
+
+Note that facets make most sense when done against categorical variables with some bounded cardinality. Typically keywords make the most sense to facet against, but even with keywords, you should use care to think about what fields make sense to facet.
+
+### Faceting by Fields
+
+Suppose we want to tabulate the frequency of all of the fields in the index. We can do this by adding `agg_by_field()` to our query, specifying the field name "tags".
+
+```r
+query <- query_facet(con) %>%
+  agg_by_field("tags")
+```
+
+The function `agg_by_field()`, and all subsequent query modifying functions take a query object as its input and emit a modified query object as its output. This makes these functions suitable for piping, which is a convenient and expressive way to build queries.
+
+To see what this new query looks like:
+
+```r
+query
+```
+
+**Note** that facet queries use [composite facet](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-facets-bucket-composite-facet.html) with paging, and running the query will automatically take care of recurrent queries until paging is done and bind the results together, saving a lot of tedious work.
+
+We can retrieve the result of this query by calling `run()`.
+
+```r
+run(query)
+```
+
+We can continue to add more dimensions to the facet using pipes. For example, to count the frequency of both the fields "tags" and "affectedCountriesIso":
+
+```r
+query_facet(con) %>%
+  agg_by_field("tags") %>%
+  agg_by_field("affectedCountriesIso") %>%
+  run()
+```
+
+### Faceting by Date Binning
+
+Suppose we want to get daily counts for each tag in the data. We can use a function `agg_by_date()`, which by default facets daily.
+
+Here, we facet on a document's field "processedOnDate".
+
+```r
+query_facet(con) %>%
+  agg_by_field("tags") %>%
+  agg_by_date("processedOnDate") %>%
+  run()
+```
+
+For finer control over the date binning, we can use functions `calendar_interval()` and `fixed_interval()`.
+
+For example, to bin on calendar week:
+
+```r
+query_facet(con) %>%
+  agg_by_field("tags") %>%
+  agg_by_date("processedOnDate", calendar_interval("1w")) %>%
+  run()
+```
+
+And to bin on every 10 days:
+
+```r
+query_facet(con) %>%
+  agg_by_field("tags") %>%
+  agg_by_date("processedOnDate", fixed_interval("10d")) %>%
+  run()
+```
+
+
+# Limitations
+
+This package is experimental and has not undergone rigorous testing to verify the correctness of the constructed queries. Use at your own risk.
+
+The package has been written to cover a large number of immediate use cases. However, there are many additional features and parameters of Elasticsearch that could be exposed through this interface in the future.
