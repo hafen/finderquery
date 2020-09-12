@@ -14,7 +14,7 @@ finder_connect <- function(
   con <- paste0(host, port, "/Finder/Finder?")
 
   # run a test query
-  # a <- curl::curl_fetch_memory("10.49.4.6:80/Findeer/Finder?op=search&q=*:*&rows=0")
+  # a <- curl::curl_fetch_memory("10.49.4.6:80/Finder/Finder?op=search&q=*:*&rows=0")
   # b <- rawToChar(a$content)
   # res <- xml2::as_list(xml2::read_xml())
 

@@ -163,7 +163,7 @@ filter_tonality <- function(query, value = NULL, from = NULL, to = NULL) {
   # tonality:[1 TO *]
 
   if (!is.null(value)) {
-    res <- paste0("tonality", ":", enc(value))
+    res <- paste0("tonality", ":", enc(as.character(value)))
   } else {
     from <- ifelse(is.null(from), "*", from)
     to <- ifelse(is.null(to), "*", to)

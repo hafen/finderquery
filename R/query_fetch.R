@@ -33,7 +33,8 @@ query_fetch <- function(
   }
 
   if (max < 0 && format != "file") {
-    path <- tempfile()
+    if (is.null(path))
+      path <- tempfile()
     dir.create(path)
     message("Since an indeterminate number of rows is being returned, ",
       "and a path has not been specified, the results will be temporarly ",

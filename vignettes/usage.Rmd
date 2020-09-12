@@ -90,19 +90,105 @@ To see our simple query:
 get_query(qry)
 ```
 
+```r
+#> [1] "op=search&q=*:*&rows=10"
+```
+
 To run it:
 
 ```r
 res <- run(qry)
-
-# inspect output
-str(res, 1)
 ```
+
+As stated earlier, by default the returned object is an R-friendly list. The structure is one list element per document:
+
+```r
+str(res, 1)
+
+#> List of 10
+#>  $ :List of 13
+#>   ..- attr(*, "id")= chr "ecuadorenvivo-031d3f5dd16162472d0c4726887f69c1"
+#>  $ :List of 14
+#>   ..- attr(*, "id")= chr "ndr-128df0ba5b42818a59251419a7e17f64"
+#>  $ :List of 15
+#>   ..- attr(*, "id")= chr "ndr-138d21d990ff5b41d1f9247b0d1dea97"
+#>  $ :List of 15
+#>   ..- attr(*, "id")= chr "ndr-927a20c1c73d32a0c5f49b14064e2e4f"
+#>  $ :List of 13
+#>   ..- attr(*, "id")= chr "ndr-9b95c471e05bd7783c9253fc8e3637b9"
+#>  $ :List of 12
+#>   ..- attr(*, "id")= chr "ndr-1c2a88c3fae62353e26b862a4706a0a3"
+#>  $ :List of 14
+#>   ..- attr(*, "id")= chr "ndr-299d9142b0b5a72ba7a6496d3d4fccc8"
+#>  $ :List of 15
+#>   ..- attr(*, "id")= chr "deutschewelle-ro-72795b85ad41330a95a633210156a25c"
+#>   ..- attr(*, "duplicate")= chr "deutschewelle-sq-72795b85ad41330a95a633210156a25c"
+#>  $ :List of 15
+#>   ..- attr(*, "id")= chr "deutschewelle-ro-f4fd8c657065e830055b0397da119ea9"
+#>   ..- attr(*, "duplicate")= chr "deutschewelle-sr-f4fd8c657065e830055b0397da119ea9"
+#>  $ :List of 16
+#>   ..- attr(*, "id")= chr "cleantechnica-d2dd2e280252de07a4524aad60621ffd"
+#>  - attr(*, "class")= chr [1:2] "finder_docs" "list"
+#>  - attr(*, "meta")=List of 6
+```
+
+The number of fields in a document varies per document, depending on its content. To look at the structure of the first document:
+
+```r
+str(res[[1]], 1)
+
+#> List of 13
+#>  $ title      :List of 2
+#>  $ link       :List of 1
+#>  $ description:List of 2
+#>  $ contentType:List of 1
+#>  $ pubDate    :List of 1
+#>  $ source     :List of 1
+#>   ..- attr(*, "url")= chr "http://www.ecuadorenvivo.com/index.php?format=feed&type=rss"
+#>   ..- attr(*, "country")= chr "EC"
+#>  $ language   :List of 1
+#>  $ guid       :List of 1
+#>  $ category   :List of 2
+#>  $ favicon    :List of 1
+#>  $ georss     :List of 1
+#>   ..- attr(*, "name")= chr "Guayaquil:Guayaquil:Guayas:Ecuador"
+#>   ..- attr(*, "id")= chr "16913475"
+#>   ..- attr(*, "lat")= chr "-2.20382"
+#>   ..- attr(*, "lon")= chr "-79.8975"
+#>   ..- attr(*, "count")= chr "2"
+#>   ..- attr(*, "pos")= chr "72,256"
+#>   ..- attr(*, ".class")= chr "2"
+#>   ..- attr(*, "iso")= chr "EC"
+#>   ..- attr(*, "charpos")= chr "72,256"
+#>   ..- attr(*, "wordlen")= chr "9,9"
+#>  $ tonality   :List of 1
+#>  $ text       :List of 1
+#>   ..- attr(*, "wordCount")= chr "188"
+#>  - attr(*, "id")= chr "ecuadorenvivo-031d3f5dd16162472d0c4726887f69c1"
+```
+
+Note that the structure of returned documents is difficult to flatten to a tabular format. Most fields can appear a variable number of times. Such as the title for this first document, for example.
+
+```r
+res[[1]]$title
+
+#> [[1]]
+#> [1] "Solucionan problema de acumulación de aguas en Pascuales | Municipio de Guayaquil"
+#> 
+#> [[2]]
+#> [1] "Solve problem of water cumulation Pascuales' municipality of Guayaquil"
+#> attr(,"lang")
+#> [1] "en"
+```
+
+In addition to fields appearing an unpredictable number of times, they also have attributes, such as in this case an attribute indicating that the second title is an english translation. Preserving attributes also makes flattening more difficult.
 
 Recall that the default fetch query returns 10 documents. We can see how many total documents are in the query by using a convenience function `n_docs()` on our output:
 
 ```r
 n_docs(res)
+
+#> 9004209
 ```
 
 <!-- Note that for some reason an empty query returns a smaller number of documents than is actually available in the document store. -->
@@ -113,82 +199,190 @@ It is probably more desirable for a fetch query to pinpoint records of interest 
 
 Filtering is added by filter functions specified for each filterable field, each of which begins with `filter_` and ends with the field name being filtered.
 
+The following sections illustrate examples of all of the available filters in thsi package.
+
 **Note** that filters can apply to both fetch and facet queries.
 
 #### Term filters
 
+Several fields in the data are categorical and can be filtered based on a specified term or set of terms. These are case insensitive.
+
 ##### `filter_category()`
 
-To filter 
+`filter_category()` allows you to filter on the `category` document field.
+
+Note that is convenient to build queries using the "pipe" ("`%>%`") operator, which allows us to string together multiple commands, including `run()` at the end to run the query.
+
+Here we filter to documents that contain the "CoronavirusInfection" category.
 
 ```r
-
+res <- query_fetch(con) %>%
+  filter_category("CoronavirusInfection") %>%
+  run()
 ```
 
-valid_categories()
+To see a list of category values that exist in the data:
 
+```r
+head(valid_categories(con))
+
+#> [1] "abrin"           "acaricides"      "acinetobacter"   "acremonium"     
+#> [5] "acrolein"        "acrylamidfurans"
+```
 
 ##### filter_country()
 
-```r
+To filter on documents for which the source comes from Germany or France:
 
+```r
+res <- query_fetch(con) %>%
+  filter_country(c("de", "fr")) %>%
+  filter_category("CoronavirusInfection") %>%
+  run()
 ```
 
+Note that when you specify a vector of values, it matches documents where *any* of those terms are found.
 
-valid_countries()
+To see a list of country values that exist in the data:
 
+```r
+head(valid_countries(con))
+
+#> [1] "ad" "ae" "af" "ag" "ai" "al"
+```
 
 ##### filter_language()
 
-```r
+To filter on documents where
 
+```r
+res <- query_fetch(con) %>%
+  filter_language(c("de", "fr")) %>%
+  run()
 ```
 
+To see a list of language values that exist in the data:
 
-valid_languages()
+```r
+head(valid_languages(con))
 
+#> [1] "af" "am" "ar" "az" "be" "bg"
+```
 
 ##### filter_source()
 
-```r
+To filter on the document source, source we can use `filter_source()`.
 
+Here, we filter on documents with source "bbc*", where the "*" is a wildcard.
+
+```r
+res <- query_fetch(con) %>%
+  filter_source("bbc*") %>%
+  run()
 ```
 
-valid_sources()
+To inspect the actual sources returned:
 
+```r
+unique(unlist(lapply(res, function(x) x$source)))
+
+#> [1] "bbc-swahili"           "bbc-health-html"       "bbc-spanish"          
+#> [4] "bbc-portuguese-brasil" "bbcnepalirss"          "bbc-turkce" 
+```
+
+To see a list of source values that exist in the data:
+
+```r
+head(valid_sources(con))
+
+#> [1] "055firenze"       "100noticias"      "10minuta"         "112-utrecht"
+#> [5] "112achterhoek"    "112brabantnieuws"
+```
 
 ##### filter_duplicate()
 
 ```r
-
+res <- query_fetch(con, max = 10) %>%
+  filter_duplicate(TRUE) %>%
+  run()
 ```
 
-valid_duplicate()
+Duplicate is either `true` or `false`:
+
+```r
+head(valid_duplicate(con))
+
+#> [1] "false" "true" 
+```
 
 #### Text filter
 
-```r
 
+
+```r
+# having word matching either "european" or "commision"
+res <- query_fetch(con) %>%
+  filter_text(c("european", "commission")) %>%
+  run()
+
+# having a word starting with "euro"
+res <- query_fetch(con, max = 20) %>%
+  filter_text("euro*") %>%
+  run()
+
+# having a word that matches "euro?ean" (question mark is single wild card)
+res <- query_fetch(con, max = 20) %>%
+  filter_text("euro?ean") %>%
+  run()
+
+# having word that sounds like "europese" (with default edit distance 2)
+res <- query_fetch(con, max = 20) %>%
+  filter_text("europese~") %>%
+  run()
+
+# having word that sounds like "Europian" (with edit distance 1)
+res <- query_fetch(con, max = 20) %>%
+  filter_text("Europian~1") %>%
+  run()
 ```
 
-filter_text()
 
 #### Date filters
 
 filter_pubdate()
 filter_indexdate()
 
+To look at all documents in German that have category "CoronavirusInfection" that were published in the last two days:
+
 ```r
-
+res <- query_fetch(con) %>%
+  filter_language("de") %>%
+  filter_category("CoronavirusInfection") %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
+  run()
 ```
-
 
 #### Other filters
 
 filter_tonality()
 
 ```r
+res <- query_fetch(con) %>%
+  filter_tonality(4) %>%
+  run()
 
+unlist(lapply(res, function(x) x$tonality))
+
+#> [1] "4" "4" "4" "4" "4" "4" "4" "4" "4" "4"
+
+
+res <- query_fetch(con) %>%
+  filter_tonality(from = 4) %>%
+  run()
+
+unlist(lapply(res, function(x) x$tonality))
+
+#> [1] "12" "12" "8"  "23" "6"  "14" "9"  "4"  "4"  "10"
 ```
 
 filter_entityid()
@@ -196,31 +390,17 @@ filter_georssid()
 filter_guid()
 
 ```r
-
-```
-
-### Fetch output
-
-
-
-### Fetching to disk
-
-In the previous fetch examples, the return object `docs` has been a list format of the document content of the query.
-
-In a many cases we may wish to do a bulk download of many articles. If we specify a `path` argument to `query_fetch()`, the results will be written in batches to the specified directory.
-
-For example, to write our last query to disk, we specify a directory in our query initizilaztion. Also, note that to simulate scrolling, we specify each iteration of the query to retrieve 10 documents (instead of the default 10k documents) with the `size` argument. With this, we see that two files get written, one for each scroll.
-
-```r
-tf <- tempfile()
-dir.create(tf)
-docs <- query_fetch(con, path = tf, size = 10) %>%
-  filter_range("processedOnDate", from = "2020-03-10") %>%
-  filter_terms("affectedCountriesIso", c("US", "CA")) %>%
-  filter_match("fullText", "disease") %>%
+res <- query_fetch(con, max = 5) %>%
+  filter_guid("washtimes-*") %>%
   run()
 
-list.files(docs)
+unlist(lapply(res, function(x) x$guid))
+
+#> [1] "washtimes-91e4808dcddb198e95b7583fdb162225"
+#> [2] "washtimes-b1f724b70e57280dbd42ed82763fb341"
+#> [3] "washtimes-3ddcef4e8631e60586391695c43a82ac"
+#> [4] "washtimes-7a44cd4213b3a663664da786b1242a38"
+#> [5] "washtimes-73daa638c1adafe89815c7c3f0c42e06"
 ```
 
 ### Specifying fields to sort on
@@ -230,51 +410,130 @@ Another operation available only for fetch queries is `sort_docs()`, which allow
 For example:
 
 ```r
-docs <- query_fetch(con, size = 10, max = 25) %>%
-  filter_range("processedOnDate", from = "2020-03-10") %>%
-  sort_docs("processedOnDate") %>%
+res <- query_fetch(con) %>%
+  filter_language("de") %>%
+  filter_category("CoronavirusInfection") %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
+  sort_by("pubdate", asc = FALSE) %>%
   run()
 
-sapply(docs, function(x) x$`_source`$processedOnDate)
+unlist(sapply(res, function(x) x$pubDate))
+#>  [1] "2020-09-12T21:40+0000" "2020-09-12T21:40+0000" "2020-09-12T21:40+0000"
+#>  [4] "2020-09-12T21:39+0000" "2020-09-12T21:35+0000" "2020-09-12T21:35+0000"
+#>  [7] "2020-09-12T21:32+0000" "2020-09-12T21:32+0000" "2020-09-12T21:31+0000"
+#> [10] "2020-09-12T21:30+0000"
 ```
 
+Fields you can sort on:
+
+```{r}
+queryable_fields()
+```
 
 ### Specifying fields to return
 
 An operation available only for fetch queries, `select_fields()`, allows us to specify which fields should be returned for each document. This is useful of documents contain some fields that are very large and we don't want to include them in our results.
 
+Note that, to our knowledge, Finder does not provide a way to specify these fields at the time of the query, so all fields are returned and then fields are filtered after being fetched. This means that there are not performance gains in terms of network transfer time, but there are gains in final file size.
+
 To see what values are acceptable for a selectable field:
 
-```r
-selectable_fields(con)
+```{r}
+valid_select_fields()
 ```
 
-For example, to return just the fields "source.countryIso" and "locations":
+```r
+res <- query_fetch(con) %>%
+  filter_language(c("de", "fr")) %>%
+  select_fields(c("title", "language")) %>%
+  run()
+```
+
+### Fetch output types
 
 ```r
-docs <- query_fetch(con, size = 10, max = 25) %>%
-  filter_range("processedOnDate", from = "2020-03-10") %>%
-  select_fields(c("source.id", "triggers", "locations")) %>%
+res <- query_fetch(con, format = "file") %>%
   run()
 
-str(docs[[1]]$`_source`, 2)
-
-to_data_frame <- function(x) {
-  tmp <- lapply(x, function(a) a$`_source`)
-  tibble::as_data_frame()
-}
+res
+#> [1] "/tmp/Rtmpf3ZFDa/file13cb810cbc6cb.xml"
 ```
 
-## Facet Queries
+```r
+res <- query_fetch(con, format = "xml") %>%
+  run()
+
+res
+#> {xml_document}
+#> <rss version="2.0" xmlns:emm="http://emm.jrc.it" xmlns:iso="http://www.iso.org/3166" xmlns:gphin="http://gphin.canada.ca">
+#> [1] <channel>\n  <title/>\n  <pubDate>Sat, 12 Sep 2020 21:34:33 UTC</pubDate>\n  < ...```
+```
+
+Note that we can convert this to our list format with the following:
+
+```r
+res <- xml_to_list(res)
+```
+
+### Fetching to disk
+
+In the previous fetch examples, the return object `docs` has been a list format of the document content of the query.
+
+In a many cases we may wish to do a bulk download of many articles. If we specify a `path` argument to `query_fetch()`, the results will be written in batches to the specified directory.
+
+For example, to write our last query to disk, we specify a directory in our query initizilaztion. Also, note that to simulate scrolling, we specify each iteration of the query to retrieve 10 documents (instead of the default 10k documents) with the `size` argument. With this, we see that two files get written, one for each scroll.
+
+Run a query while retrieving just 1 row just to see how many documents there are
+
+```r
+res <- query_fetch(con, max = 0) %>%
+  filter_language("de") %>%
+  filter_category("CoronavirusInfection") %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 5) %>%
+  sort_by("pubdate", asc = FALSE) %>%
+  run()
+
+n_docs(res)
+#> [1] 14032
+```
+
+Now get all of these documents with "pagination" (set `max = -1` for all):
+
+```r
+tf <- tempfile()
+dir.create(tf)
+
+res <- query_fetch(con, max = -1, format = "file", path = tf) %>%
+  filter_language("de") %>%
+  filter_category("CoronavirusInfection") %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 5) %>%
+  # select_fields("text") %>%
+  sort_by("pubdate", asc = FALSE) %>%
+  run()
+#> 10000 documents fetched (71%)...
+#> 14032 documents fetched (100%)...
+
+list.files(tf)
+#> [1] "out0001.xml" "out0002.xml"
+
+
+xml <- lapply(list.files(tf, full.names = TRUE), xml2::read_xml)
+docs <- unlist(lapply(xml,xml_to_list), recursive = FALSE)
+length(docs)
+#> [1] 14032
+```
+
+## Facet gueries
 
 Facet queries are constructed by doing the following:
 
 - Initiate a facet query using `query_facet()`
-- Build on this query by specifying combinations of:
-  - Fields to facet on using `agg_by_field()`
-  - Date binning using `agg_by_date()`
+- Optionally specify filters to apply to the documents
+- Build on this query by specifying *one* of:
+  - Fields to facet on using `facet_by()`
+  - Date binning using `facet_date_range()`
 
-### Initiating a Query
+### Initiating a guery
 
 To initiate a facet query, we use the function `query_facet()`, and pass it our connection object.
 
@@ -282,39 +541,92 @@ To initiate a facet query, we use the function `query_facet()`, and pass it our 
 query <- query_facet(con)
 ```
 
-We can view the query's translation to an Elasticsearch search body string simply through printing the query.
+Similarly to fetch queries, we can call `get_query()` or `run()` to print the query string or run the query.
 
-```r
-query
-```
-
-Here, of course, the query is empty as we haven't specified facet dimensions yet.
-
-Queries can be executed using the `run()` function.
-
-```r
-run(query)
-```
-
-Since the query is empty, nothing is returned.
-
-### Getting a List of Queryable Fields
-
-To begin specifying fields to facet on, it can be helpful to get a view of what fields are available to facet on. This can be done by passing the connection object to `queryable_fields().
-
-```r
-queryable_fields(con)
-```
-
-Note that facets make most sense when done against categorical variables with some bounded cardinality. Typically keywords make the most sense to facet against, but even with keywords, you should use care to think about what fields make sense to facet.
-
-### Faceting by Fields
+### Faceting by fields
 
 Suppose we want to tabulate the frequency of all of the fields in the index. We can do this by adding `agg_by_field()` to our query, specifying the field name "tags".
 
 ```r
-query <- query_facet(con) %>%
-  agg_by_field("tags")
+query_facet(con) %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
+  facet_by("language") %>%
+  get_query()
+#> [1] "op=search&q=*:*&rows=0&facet=true&native=true&facet.field=language&facet.limit=-1&facet.sort=count&facet.mincount=0&facet.offset=0&fq=pubdate%3A%5B2020-09-10T00%3A00%3A00Z%20TO%20%2A%5D"
+
+res <- query_facet(con) %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
+  facet_by("category", limit = 10) %>%
+  run()
+res
+#> # A tibble: 10 x 2
+#>    category                            n
+#>    <chr>                           <dbl>
+#>  1 fifa2018participatingcountries 458411
+#>  2 euro                           452639
+#>  3 coronavirusinfection           209279
+#>  4 paho                           208024
+#>  5 wpro                           115488
+#>  6 radnucnonelist                 109946
+#>  7 emro                            94203
+#>  8 usa                             91441
+#>  9 italy                           61976
+#> 10 implantrisks                    51553
+
+res <- query_facet(con) %>%
+  filter_category("coronavirusinfection") %>%
+  facet_date_range(
+    start = as.Date(Sys.time()) - 20,
+    end = as.Date(Sys.time()),
+    gap = range_gap(1, "DAY")
+  ) %>%
+  run()
+#> # A tibble: 20 x 2
+#>    pubdate                 n
+#>    <dttm>              <dbl>
+#>  1 2020-08-23 00:00:00 54439
+#>  2 2020-08-24 00:00:00 79749
+#>  3 2020-08-25 00:00:00 87616
+#>  4 2020-08-26 00:00:00 82739
+#>  5 2020-08-27 00:00:00 82490
+#>  6 2020-08-28 00:00:00 79061
+#>  7 2020-08-29 00:00:00 54291
+#>  8 2020-08-30 00:00:00 50336
+#>  9 2020-08-31 00:00:00 76238
+#> 10 2020-09-01 00:00:00 84864
+#> 11 2020-09-02 00:00:00 86083
+#> 12 2020-09-03 00:00:00 85665
+#> 13 2020-09-04 00:00:00 81934
+#> 14 2020-09-05 00:00:00 57294
+#> 15 2020-09-06 00:00:00 50430
+#> 16 2020-09-07 00:00:00 77083
+#> 17 2020-09-08 00:00:00 85925
+#> 18 2020-09-09 00:00:00 90019
+#> 19 2020-09-10 00:00:00 75486
+#> 20 2020-09-11 00:00:00 76962
+
+res <- query_facet(con) %>%
+  filter_category("coronavirusinfection") %>%
+  facet_date_range(
+    start = as.Date(Sys.time()) - 20,
+    end = as.Date(Sys.time()),
+    gap = range_gap(1, "HOUR")
+  ) %>%
+  run()
+#> # A tibble: 480 x 2
+#>    pubdate                 n
+#>    <dttm>              <dbl>
+#>  1 2020-08-23 00:00:00  1043
+#>  2 2020-08-23 00:00:00  1131
+#>  3 2020-08-23 00:00:00  1186
+#>  4 2020-08-23 00:00:00  1088
+#>  5 2020-08-23 00:00:00  2566
+#>  6 2020-08-23 00:00:00  2276
+#>  7 2020-08-23 00:00:00  2344
+#>  8 2020-08-23 00:00:00  2075
+#>  9 2020-08-23 00:00:00  2915
+#> 10 2020-08-23 00:00:00  2491
+#> # … with 470 more rows
 ```
 
 The function `agg_by_field()`, and all subsequent query modifying functions take a query object as its input and emit a modified query object as its output. This makes these functions suitable for piping, which is a convenient and expressive way to build queries.
@@ -322,15 +634,13 @@ The function `agg_by_field()`, and all subsequent query modifying functions take
 To see what this new query looks like:
 
 ```r
-query
+get_query(qry)
 ```
-
-**Note** that facet queries use [composite facet](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-facets-bucket-composite-facet.html) with paging, and running the query will automatically take care of recurrent queries until paging is done and bind the results together, saving a lot of tedious work.
 
 We can retrieve the result of this query by calling `run()`.
 
 ```r
-run(query)
+run(qry)
 ```
 
 We can continue to add more dimensions to the facet using pipes. For example, to count the frequency of both the fields "tags" and "affectedCountriesIso":
@@ -375,6 +685,35 @@ query_facet(con) %>%
   run()
 ```
 
+## String queries
+
+There are many ways queries can be constructed with Solr/Finder. The functions for fetching and faceting provided above are meant to cover the vast majority of use cases, but their simplified API might not allow for some very special cases. If one is very familiar with Finder/Solr and wants to use this package to execute their own custom queries, there is a simple mechanism for doing this:
+
+```r
+# query_str() allows you to run a query that you have already constructed a query string for
+# default is to return a list
+res <- query_str(con, "op=search&q=*:*&rows=0") %>%
+  run()
+str(res$rss$channel, 1)
+#> List of 8
+#>  $ title   : list()
+#>  $ pubDate :List of 1
+#>  $ q       :List of 1
+#>  $ message : list()
+#>  $ QTime   :List of 1
+#>  $ numFound:List of 1
+#>  $ start   :List of 1
+#>  $ rows    :List of 1
+
+# to return in xml format
+res <- query_str(con, "op=search&q=*:*&rows=0", format = "xml") %>%
+  run()
+
+res
+#> {xml_document}
+#> <rss version="2.0" xmlns:emm="http://emm.jrc.it" xmlns:iso="http://www.iso.org/ 3166" xmlns:gphin="http://gphin.canada.ca">
+#> [1] <channel>\n  <title/>\n  <pubDate>Sat, 12 Sep 2020 22:01:54 UTC</pubDate>\n  < ...
+```
 
 # Limitations
 
