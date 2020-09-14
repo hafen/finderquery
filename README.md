@@ -2,7 +2,7 @@
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
-[![R build status](https://github.com/hafen/finderquery/workflows/R-CMD-check/badge.svg)](https://github.com/hafen/finderquery/actions)
+<!-- [![R build status](https://github.com/hafen/finderquery/workflows/R-CMD-check/badge.svg)](https://github.com/hafen/finderquery/actions) -->
 <!-- badges: end -->
 
 The finderquery package provides utilities for building Finder queries in a simple and intuitive way. It also provides an API that uses these utilities as well as code for a web application that provides an interface for building a query and downloading documents.
