@@ -4,8 +4,7 @@
 \alias{range_gap}
 \title{Specify a 'gap' parameter for facet_range queries}
 \usage{
-range_gap(num = 1, units = c("DAY", "MINUTE", "HOUR", "WEEK", "MONTH",
-  "YEAR"))
+range_gap(num = 1, units = c("DAY", "MINUTE", "HOUR", "WEEK", "MONTH", "YEAR"))
 }
 \description{
 Specify a 'gap' parameter for facet_range queries

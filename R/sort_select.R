@@ -16,11 +16,11 @@ select_fields <- function(query, fields = NULL) {
   if (length(query$select) > 0)
     message("Overwriting previously-specified fields to select")
   if (!is.null(fields)) {
-    nu <- setdiff(fields, valid_select_fields())
+    nu <- setdiff(fields, selectable_fields())
     if (length(nu) > 0)
       message("Ignoring invalid fields specified in 'select_fields': ",
         paste(nu, collapse = ", "))
-    fields <- intersect(fields, valid_select_fields())
+    fields <- intersect(fields, selectable_fields())
   }
   query$select <- fields
   query
@@ -28,7 +28,7 @@ select_fields <- function(query, fields = NULL) {
 
 #' Valid fields that can be selected
 #' @export
-valid_select_fields <- function() {
+selectable_fields <- function() {
   c("category", "contentType", "description", "enclosure", "entity", 
     "favicon", "fullgeo", "georss", "guid", "keyword", "language", 
     "link", "location", "pubDate", "quote", "relevance", "source", 

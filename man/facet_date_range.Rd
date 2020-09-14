@@ -4,8 +4,7 @@
 \alias{facet_date_range}
 \title{Specify a date range facet}
 \usage{
-facet_date_range(query, field = c("pubdate", "indexdate"), start, end,
-  gap)
+facet_date_range(query, field = c("pubdate", "indexdate"), start, end, gap)
 }
 \description{
 Specify a date range facet

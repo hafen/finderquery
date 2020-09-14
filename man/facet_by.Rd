@@ -4,8 +4,14 @@
 \alias{facet_by}
 \title{Specify a field to facet by}
 \usage{
-facet_by(query, field, limit = -1, sort = c("count", "index"),
-  mincount = 0, offset = 0)
+facet_by(
+  query,
+  field,
+  limit = -1,
+  sort = c("count", "index"),
+  mincount = 0,
+  offset = 0
+)
 }
 \arguments{
 \item{query}{a \code{\link[=query_facet]{query_facet()}} object}

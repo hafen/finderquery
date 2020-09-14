@@ -6,8 +6,8 @@ queryable_fields <- function() {
     "text", "quotewho", "quoteabout", "georssid")
 }
 
-# setdiff(queryable_fields(), tolower(valid_select_fields()))
-# setdiff(tolower(valid_select_fields()), queryable_fields())
+# setdiff(queryable_fields(), tolower(selectable_fields()))
+# setdiff(tolower(selectable_fields()), queryable_fields())
 
 #' Get a vector of all unique "language" values
 #' @export

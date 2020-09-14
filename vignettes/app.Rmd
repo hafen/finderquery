@@ -1,0 +1,23 @@
+---
+title: "Application Interface and API"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Application Interface and API}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This codebase contains code that exposes a REST API and web interface for building queries.
+
+The REST API is built using [Plumber](https://www.rplumber.io).
+
+The web app is written using [React](https://reactjs.org) and calls the API to build the query and download the documents.
+
+![](app_screenshot.png)

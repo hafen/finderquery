@@ -262,7 +262,7 @@ remove_fields <- function(x, query) {
   if (is.null(query$select))
     return(x)
 
-  exclude <- setdiff(valid_select_fields(), query$select)
+  exclude <- setdiff(selectable_fields(), query$select)
   for (val in exclude) {
     nodes <- xml2::xml_find_all(x, paste0("//", val))
     xml2::xml_remove(nodes, free = TRUE)

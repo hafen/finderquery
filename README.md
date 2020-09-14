@@ -1,11 +1,13 @@
-# elasticquery
+# finderquery
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
-[![Travis build status](https://travis-ci.org/hafen/elasticquery.svg?branch=master)](https://travis-ci.org/hafen/elasticquery)
+[![R build status](https://github.com/hafen/finderquery/workflows/R-CMD-check/badge.svg)](https://github.com/hafen/finderquery/actions)
 <!-- badges: end -->
 
-The elasticquery package provides utilities for building Elasticsearch queries in a simple and intuitive way.
+The finderquery package provides utilities for building Finder queries in a simple and intuitive way. It also provides an API that uses these utilities as well as code for a web application that provides an interface for building a query and downloading documents.
+
+Note that this package is not of general use to the public. It is built to work against the Finder system used by EIOS. It is only made public to make it easier to share with EIOS, as there is nothing proprietary stored in this repository.
 
 ## Installation
 
@@ -13,103 +15,41 @@ You can install the package from Github with:
 
 ```r
 # install.packages("remotes")
-remotes::install_github("hafen/elasticquery")
+remotes::install_github("hafen/finderquery")
 ```
 
 ## Examples
 
+See the full "usage" documentation for many more examples as well as details on how everything works.
+
 ```r
-# connect and specify a primary index for queries
-con <- es_connect(
-  host = "127.0.0.1", port = 9200,
-  primary_index = "eios-items")
+library(finderquery)
 
-# initialize a query
-query <- query_agg(con)
+# specify Finder location
+con <- finder_connect("10.49.4.6")
 
-# view the query (empty)
-query
-
-# run the query
-run(query)
-
-# see what what can we aggregate on?
-queryable_fields(con)
-
-# aggregate "tags" field
-query <- query_agg(con) %>%
-  agg_by_field("tags")
-query
-run(query)
-
-# aggregate on multiple fields
-query_agg(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_field("affectedCountriesIso") %>%
+# query all documents in German that have category "CoronavirusInfection" 
+# that were published in the last two days, sorted by publication date
+res <- query_fetch(con) %>%
+  filter_language("de") %>%
+  filter_category("CoronavirusInfection") %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
   run()
 
-# aggregate by date (default binning is daily, UTC)
-query_agg(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_date("processedOnDate") %>%
+# count documents by top 10 categories over the last 2 days
+res <- query_facet(con) %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
+  facet_by("category", limit = 10) %>%
   run()
 
-# aggregate by a date using a weekly calendar interval
-query_agg(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_date("processedOnDate", calendar_interval("1w")) %>%
+# count documents daily for all "CoronavirusInfection" articles over
+# the last 20 days, hourly
+res <- query_facet(con) %>%
+  filter_category("coronavirusinfection") %>%
+  facet_date_range(
+    start = as.Date(Sys.time()) - 20,
+    end = as.Date(Sys.time()),
+    gap = range_gap(1, "HOUR")
+  ) %>%
   run()
-
-# aggregate by a date using a 10-day fixed interval
-query_agg(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_date("processedOnDate", fixed_interval("10d")) %>%
-  run()
-
-# add a date filter range to aggregation
-query_agg(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_date("processedOnDate", calendar_interval("1w")) %>%
-  filter_range("processedOnDate", from = "2018-01-01") %>%
-  run()
-
-# add a terms filter to aggregation
-query_agg(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_date("processedOnDate", calendar_interval("1w")) %>%
-  filter_range("processedOnDate", from = "2018-01-01") %>%
-  filter_terms("affectedCountriesIso", c("US", "CA")) %>%
-  run()
-
-# add a match filter to aggregation
-query_agg(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_date("processedOnDate", calendar_interval("1w")) %>%
-  filter_range("processedOnDate", from = "2018-01-01") %>%
-  filter_terms("affectedCountriesIso", c("US", "CA")) %>%
-  filter_match("fullText", "disease") %>%
-  run()
-
-# fetch all documents
-docs <- query_fetch(con) %>%
-  run()
-
-# fetch documents using filters
-docs <- query_fetch(con) %>%
-  filter_range("processedOnDate", from = "2018-01-01") %>%
-  filter_terms("affectedCountriesIso", c("US", "CA")) %>%
-  filter_match("fullText", "disease") %>%
-  run()
-
-# fetch and save to disk
-tf <- tempfile()
-dir.create(tf)
-docs <- query_fetch(con, path = tf, size = 10) %>%
-  filter_range("processedOnDate", from = "2018-01-01") %>%
-  filter_terms("affectedCountriesIso", c("US", "CA")) %>%
-  filter_match("fullText", "disease") %>%
-  run()
-
-list.files(docs)
 ```
-

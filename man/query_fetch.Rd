@@ -4,8 +4,13 @@
 \alias{query_fetch}
 \title{Initialize a document fetch query}
 \usage{
-query_fetch(con, path = NULL, max = 10, size = 10000,
-  format = c("list", "xml", "file"))
+query_fetch(
+  con,
+  path = NULL,
+  max = 10,
+  size = 10000,
+  format = c("list", "xml", "file")
+)
 }
 \arguments{
 \item{con}{A finder connection object from \code{\link[=finder_connect]{finder_connect()}}.}

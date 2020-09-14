@@ -87,7 +87,7 @@ build_query <- function(
 
   if (!is.null(fields)) {
     fields <- up(fields)
-    if (length(fields) != length(valid_select_fields()))
+    if (length(fields) != length(selectable_fields()))
       qry <- qry %>% select_fields(fields)
   }
 

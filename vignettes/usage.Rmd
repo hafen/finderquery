@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 # Setup
 
-The first thing to do is to establish a connection with the Finder server. In our case, `10.49.4.6`.
+The first thing to do is to establish a connection with the Finder server by specifying its IP address and optionally the port. In our case, `10.49.4.6`.
 
 ```{r setup}
 library(finderquery)
@@ -26,9 +26,7 @@ con <- finder_connect("10.49.4.6")
 
 This connection object is passed to queries so it knows where to go to run the query.
 
-Note that we can also specify the `primary_index`, which is the index used by default by queries we build unless we specify otherwise in the query. Here we are querying "eios-items" by default.
-
-Also, note that if you are working in an R console on the `.18` or `.19` machines, you may need to run the following for the Solr server to be reachable:
+Note that if you are working in an R console on the `.18` or `.19` machines, you may need to run the following for the Solr server to be reachable:
 
 ```r
 Sys.unsetenv("NO_PROXY")
@@ -50,10 +48,10 @@ Two major types of queries are currently supported by this package.
 After a query is initiated, it can built upon by piping various operations:
 
 - `filter_*()`: filter on specified values of a field (*), for both fetch and facet queries
-- `facet_by()`: specify a field to facet by, only for facet queries
-- `facet_date_range()`: specify a date range facet, only for facet queries
 - `select_fields()`: specify fields to select in the returned documents, only for fetch queries
 - `sort_by()`: specify field by which to sort the returned documents, only for fetch queries.
+- `facet_by()`: specify a field to facet by, only for facet queries
+- `facet_date_range()`: specify a date range facet, only for facet queries
 
 ## Fetch queries
 
@@ -65,12 +63,12 @@ A fetch query is initialized using `query_fetch()`, which takes as its primary a
 
 Additonal arguments include:
 
-- `max`: The maximum number of documents to return. The default is 10. If set to `-1`, the total number of documents that match the query parameters will be returned. Often it is is good to run a query with the default value of `max` or even `max = 0` to get a feel for how many documents are in the query before deciding to pull the full set of documents. Even when `max = 0` is set, the query result will include an indication of the total number of documents in the query. An example of this will be shown below. Setting `max = -1` (or anything less than 0) will result in all documents being pulled.
+- `max`: The maximum number of documents to return. The default is 10. If set to `-1`, the total number of documents that match the query parameters will be returned. Often it is good to run a query with the default value of `max` or even `max = 0` to get a feel for how many documents are in the query before deciding to pull the full set of documents. Even when `max = 0` is set, the query result will include an indication of the total number of documents in the query. An example of this will be shown below. Setting `max = -1` (or anything less than 0) will result in all documents being pulled.
 - `format`: One of "list", "xml", or "file". The default is "list", in which case the documents are read into memory and converted to a more R-convenient list format using `list_to_xml()`. If "xml", the documents will be read into R and returned as an xml2 "xml_document" object. If "file", the xml file(s) will simply be downloaded and the path to the directory containing these files will be returned. Note that if `max = -1` and `format` is not "file", it will be forced to "file" (and a temporary directory will be used if not specified) since the number of documents returned could potentially be very large. After pulling all the documents, if the number of documents is small enough to read into memory in a manageable way (currently set at <=100k documents), the original `format` specification will be honored.
 - `path`: If `format = "file"`, the path for where to store the downloaded xml files can be specified. If not specified, a temporary directory will be used. The specified path should ideally be empty.
 - `size`: The number of documents to pull in each batch of pagination (see note below on pagination). The default is 10,000, which is the maximum allowed by Solr.
 
-**Note** that fetch queries automatically take care of [pagination](https://lucene.apache.org/solr/guide/6_6/pagination-of-results.html) using cursors to retrieve potentially very large sets of documents. The pagination limit is 10k documents, so iterative queries are run to fetch these in batches and piece them together upon retrieval.
+**Note**: Fetch queries automatically take care of [pagination](https://lucene.apache.org/solr/guide/6_6/pagination-of-results.html) using cursors to retrieve potentially very large sets of documents. The pagination limit is 10k documents, so iterative queries are run to fetch these in batches and piece them together upon retrieval.
 
 Initiating an "empty" query is as easy as the following:
 
@@ -78,7 +76,7 @@ Initiating an "empty" query is as easy as the following:
 qry <- query_fetch(con)
 ```
 
-The object `qry` can be passed on to other functions such as the `filter_*()` functions to further refine the query.
+The query can be built upon by passing the `qry` object to other functions such as the `filter_*()` functions to further refine the query.
 
 At any point when constructing a query, the query object can either be passed to:
 - `get_query()`: prints out a Solr API call that can be inspected or pasted in a web browser to retrieve the results
@@ -88,10 +86,6 @@ To see our simple query:
 
 ```{r}
 get_query(qry)
-```
-
-```r
-#> [1] "op=search&q=*:*&rows=10"
 ```
 
 To run it:
@@ -104,7 +98,6 @@ As stated earlier, by default the returned object is an R-friendly list. The str
 
 ```r
 str(res, 1)
-
 #> List of 10
 #>  $ :List of 13
 #>   ..- attr(*, "id")= chr "ecuadorenvivo-031d3f5dd16162472d0c4726887f69c1"
@@ -136,7 +129,6 @@ The number of fields in a document varies per document, depending on its content
 
 ```r
 str(res[[1]], 1)
-
 #> List of 13
 #>  $ title      :List of 2
 #>  $ link       :List of 1
@@ -171,7 +163,6 @@ Note that the structure of returned documents is difficult to flatten to a tabul
 
 ```r
 res[[1]]$title
-
 #> [[1]]
 #> [1] "Solucionan problema de acumulación de aguas en Pascuales | Municipio de Guayaquil"
 #> 
@@ -181,13 +172,12 @@ res[[1]]$title
 #> [1] "en"
 ```
 
-In addition to fields appearing an unpredictable number of times, they also have attributes, such as in this case an attribute indicating that the second title is an english translation. Preserving attributes also makes flattening more difficult.
+In addition to fields appearing an unpredictable number of times, they also have attributes that are often important to preserve, but are not always predictable. In this case there is an attribute indicating that the second title is an english translation. Preserving attributes also makes flattening more difficult.
 
-Recall that the default fetch query returns 10 documents. We can see how many total documents are in the query by using a convenience function `n_docs()` on our output:
+Recall that the default fetch query returns 10 documents. We can see how many total documents match the query parameters by using a convenience function `n_docs()` on our output:
 
 ```r
 n_docs(res)
-
 #> 9004209
 ```
 
@@ -225,7 +215,6 @@ To see a list of category values that exist in the data:
 
 ```r
 head(valid_categories(con))
-
 #> [1] "abrin"           "acaricides"      "acinetobacter"   "acremonium"     
 #> [5] "acrolein"        "acrylamidfurans"
 ```
@@ -237,7 +226,6 @@ To filter on documents for which the source comes from Germany or France:
 ```r
 res <- query_fetch(con) %>%
   filter_country(c("de", "fr")) %>%
-  filter_category("CoronavirusInfection") %>%
   run()
 ```
 
@@ -247,13 +235,12 @@ To see a list of country values that exist in the data:
 
 ```r
 head(valid_countries(con))
-
 #> [1] "ad" "ae" "af" "ag" "ai" "al"
 ```
 
 ##### filter_language()
 
-To filter on documents where
+We can use `filter_language()` to filter on languages in the documents:
 
 ```r
 res <- query_fetch(con) %>%
@@ -265,7 +252,6 @@ To see a list of language values that exist in the data:
 
 ```r
 head(valid_languages(con))
-
 #> [1] "af" "am" "ar" "az" "be" "bg"
 ```
 
@@ -285,7 +271,6 @@ To inspect the actual sources returned:
 
 ```r
 unique(unlist(lapply(res, function(x) x$source)))
-
 #> [1] "bbc-swahili"           "bbc-health-html"       "bbc-spanish"          
 #> [4] "bbc-portuguese-brasil" "bbcnepalirss"          "bbc-turkce" 
 ```
@@ -294,12 +279,13 @@ To see a list of source values that exist in the data:
 
 ```r
 head(valid_sources(con))
-
 #> [1] "055firenze"       "100noticias"      "10minuta"         "112-utrecht"
 #> [5] "112achterhoek"    "112brabantnieuws"
 ```
 
 ##### filter_duplicate()
+
+We can filter on whether the document is flagged as a duplicate or not with `filter_duplicate()`:
 
 ```r
 res <- query_fetch(con, max = 10) %>%
@@ -311,13 +297,14 @@ Duplicate is either `true` or `false`:
 
 ```r
 head(valid_duplicate(con))
-
 #> [1] "false" "true" 
 ```
 
 #### Text filter
 
+The `filter_text()` function allows you to specify strings or a vector of strings to search for in the document's title, description, and document text, including translations.
 
+Below are some examples of using `filter_text()`:
 
 ```r
 # having word matching either "european" or "commision"
@@ -346,13 +333,13 @@ res <- query_fetch(con, max = 20) %>%
   run()
 ```
 
-
 #### Date filters
 
-filter_pubdate()
-filter_indexdate()
+Two date filter functions are available, `filter_pubdate()` and `filter_indexdate()`, which filter on the publication date and indexed date, respectively.
 
-To look at all documents in German that have category "CoronavirusInfection" that were published in the last two days:
+These functions have arguments `from` and `to` which take a "Date" or "POSIXct" as input. If left unspecified, the filter will be open-ended on that side of the range. Instead of specifying a range, you can also specify `on` to get all articles on a specific day.
+
+The example below queries all documents in German that have category "CoronavirusInfection" that were published in the last two days:
 
 ```r
 res <- query_fetch(con) %>%
@@ -362,9 +349,15 @@ res <- query_fetch(con) %>%
   run()
 ```
 
+Note here that we are stringing multiple filter commands together to get to what we are looking for. You can string as many filters together as you wish, but note that if you apply the same filter twice, the second one will override the first.
+
 #### Other filters
 
-filter_tonality()
+A few other filter functions are available.
+
+##### filter_tonality()
+
+`filter_tonality()` is a special range filter that takes numeric values. In addition to having `from` and `to` parameters that behave in the same way as the date range filters, it also has a `value` parameter which can be used to retrive documents with a specific tonality value.
 
 ```r
 res <- query_fetch(con) %>%
@@ -372,7 +365,6 @@ res <- query_fetch(con) %>%
   run()
 
 unlist(lapply(res, function(x) x$tonality))
-
 #> [1] "4" "4" "4" "4" "4" "4" "4" "4" "4" "4"
 
 
@@ -381,13 +373,14 @@ res <- query_fetch(con) %>%
   run()
 
 unlist(lapply(res, function(x) x$tonality))
-
 #> [1] "12" "12" "8"  "23" "6"  "14" "9"  "4"  "4"  "10"
 ```
 
-filter_entityid()
-filter_georssid()
-filter_guid()
+##### ID filters
+
+Additional filters exist to filter on various IDs: `filter_entityid()`, `filter_georssid()`, `filter_guid()`.
+
+Below is an example of filtering on guid:
 
 ```r
 res <- query_fetch(con, max = 5) %>%
@@ -395,7 +388,6 @@ res <- query_fetch(con, max = 5) %>%
   run()
 
 unlist(lapply(res, function(x) x$guid))
-
 #> [1] "washtimes-91e4808dcddb198e95b7583fdb162225"
 #> [2] "washtimes-b1f724b70e57280dbd42ed82763fb341"
 #> [3] "washtimes-3ddcef4e8631e60586391695c43a82ac"
@@ -407,7 +399,7 @@ unlist(lapply(res, function(x) x$guid))
 
 Another operation available only for fetch queries is `sort_docs()`, which allows you to specify fields to sort by as part of the fetch.
 
-For example:
+For example, here we run a query similar to one shown earlier where we additionaly sort the results by date of publication.
 
 ```r
 res <- query_fetch(con) %>%
@@ -424,7 +416,7 @@ unlist(sapply(res, function(x) x$pubDate))
 #> [10] "2020-09-12T21:30+0000"
 ```
 
-Fields you can sort on:
+To see what fields are available to sort on:
 
 ```{r}
 queryable_fields()
@@ -432,24 +424,35 @@ queryable_fields()
 
 ### Specifying fields to return
 
-An operation available only for fetch queries, `select_fields()`, allows us to specify which fields should be returned for each document. This is useful of documents contain some fields that are very large and we don't want to include them in our results.
+An operation available only for fetch queries, `select_fields()`, allows us to specify which fields should be returned for each document. This is useful if documents contain some fields that are very large and we don't want to include them in our results.
 
-Note that, to our knowledge, Finder does not provide a way to specify these fields at the time of the query, so all fields are returned and then fields are filtered after being fetched. This means that there are not performance gains in terms of network transfer time, but there are gains in final file size.
+Note that, to our knowledge, Finder does not provide a way to specify these fields at the time the query is run, so all fields are returned by the query and then fields are removed after being fetched. This means that there are not performance gains in terms of network transfer time, but there are gains in final file size.
 
 To see what values are acceptable for a selectable field:
 
 ```{r}
-valid_select_fields()
+selectable_fields()
 ```
+
+Note that these do not exactly match the fields that we can filter on. What is represented in a document vs. what is exposed by Finder to query on are not necessarily the same thing.
+
+Suppose we have our same query as before, but we only want to pull out the document title and publication date:
 
 ```r
 res <- query_fetch(con) %>%
-  filter_language(c("de", "fr")) %>%
-  select_fields(c("title", "language")) %>%
+  filter_language("de") %>%
+  filter_category("CoronavirusInfection") %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
+  sort_by("pubdate", asc = FALSE) %>%
+  select_fields(c("title", "pubDate")) %>%
   run()
 ```
 
-### Fetch output types
+### Fetch output formats
+
+All of the results of queries above have used the default output format of "list", where the xml that is returned from the query is transformed to an R-friendly list as shown earlier.
+
+If we instead specify that the output format is "file", a path is returned which we can read in or do something else with:
 
 ```r
 res <- query_fetch(con, format = "file") %>%
@@ -458,6 +461,8 @@ res <- query_fetch(con, format = "file") %>%
 res
 #> [1] "/tmp/Rtmpf3ZFDa/file13cb810cbc6cb.xml"
 ```
+
+If we specify the format to be "xml", then the raw xml is read into R using the xml2 package.
 
 ```r
 res <- query_fetch(con, format = "xml") %>%
@@ -481,9 +486,9 @@ In the previous fetch examples, the return object `docs` has been a list format 
 
 In a many cases we may wish to do a bulk download of many articles. If we specify a `path` argument to `query_fetch()`, the results will be written in batches to the specified directory.
 
-For example, to write our last query to disk, we specify a directory in our query initizilaztion. Also, note that to simulate scrolling, we specify each iteration of the query to retrieve 10 documents (instead of the default 10k documents) with the `size` argument. With this, we see that two files get written, one for each scroll.
+When running a potentially large query, it is good to first run it with `max = 0` so that no documents are returned. Queries that may involve a large number of documents but do not return any documents can run fairly quickly, and we can examine the results to find out how many documents match the query parameters and whether it would be a good idea to try to download them.
 
-Run a query while retrieving just 1 row just to see how many documents there are
+For example, with a query similar to what we specified earlier, suppose we want to get all documents in the last 5 days that are in German and have the "CoronavirusInfection" category.
 
 ```r
 res <- query_fetch(con, max = 0) %>%
@@ -497,7 +502,9 @@ n_docs(res)
 #> [1] 14032
 ```
 
-Now get all of these documents with "pagination" (set `max = -1` for all):
+We see that there are about 14k documents, which is not a lot to try to download.
+
+Now, to get all of these documents with pagination, we can set `max = -1` and provide a directory to write the output to:
 
 ```r
 tf <- tempfile()
@@ -515,8 +522,13 @@ res <- query_fetch(con, max = -1, format = "file", path = tf) %>%
 
 list.files(tf)
 #> [1] "out0001.xml" "out0002.xml"
+```
 
+The ~14k documents were downloaded over two files located in the output directory we specified.
 
+Note that since 14k documents isn't that large, we may want to read them all into memory in R in the more convenient list format:
+
+```r
 xml <- lapply(list.files(tf, full.names = TRUE), xml2::read_xml)
 docs <- unlist(lapply(xml,xml_to_list), recursive = FALSE)
 length(docs)
@@ -545,15 +557,21 @@ Similarly to fetch queries, we can call `get_query()` or `run()` to print the qu
 
 ### Faceting by fields
 
-Suppose we want to tabulate the frequency of all of the fields in the index. We can do this by adding `agg_by_field()` to our query, specifying the field name "tags".
+Suppose we want to tabulate the frequency of all of the categories in the documents over the last two days. We can do this by adding `facet_by()` to our query, specifying the field name "category".
 
 ```r
 query_facet(con) %>%
   filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
-  facet_by("language") %>%
+  facet_by("category") %>%
   get_query()
-#> [1] "op=search&q=*:*&rows=0&facet=true&native=true&facet.field=language&facet.limit=-1&facet.sort=count&facet.mincount=0&facet.offset=0&fq=pubdate%3A%5B2020-09-10T00%3A00%3A00Z%20TO%20%2A%5D"
+#> [1] "op=search&q=*:*&rows=0&facet=true&native=true&facet.field=category&facet.limit=-1&facet.sort=count&facet.mincount=0&facet.offset=0&fq=pubdate%3A%5B2020-09-10T00%3A00%3A00Z%20TO%20%2A%5D"
+```
 
+Here we see the facet query string that is constructed by this query specification.
+
+To run the query, we use `run()` as we did with fetch queries. Here, we additionaly specify in `facet_by()` that we only want the top 10 categories.
+
+```r
 res <- query_facet(con) %>%
   filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
   facet_by("category", limit = 10) %>%
@@ -572,7 +590,29 @@ res
 #>  8 usa                             91441
 #>  9 italy                           61976
 #> 10 implantrisks                    51553
+```
 
+Different from fetch queries, facet queries always return a data frame.
+
+To see what fields are avilable to facet on:
+
+```{r}
+facetable_fields()
+```
+
+### Faceting by dates
+
+A faceting function is available to specify faceting on dates, `facet_date_range()`.
+
+The main parameters for this function are:
+
+- `field`: either "pubdate" (default) or "indexdate"
+- `start`, `end`: the start and end dates to facet over, specified as "Date" objects
+- `gap`: The bin size to facet over. This is specified using the `range_gap()` function as will be illustrated the examples below.
+
+To facet daily by publication date for all "CoronavirusInfection" articles over the past 20 days:
+
+```r
 res <- query_facet(con) %>%
   filter_category("coronavirusinfection") %>%
   facet_date_range(
@@ -604,7 +644,13 @@ res <- query_facet(con) %>%
 #> 18 2020-09-09 00:00:00 90019
 #> 19 2020-09-10 00:00:00 75486
 #> 20 2020-09-11 00:00:00 76962
+```
 
+The `range_gap()` function takes two parameters. The first is the number of time units the facet window gap should be and the second is the time unit, which is one of "DAY" (default), "MINUTE", "HOUR", "WEEK", "MONTH", or "YEAR".
+
+Here we run the same facet but hourly:
+
+```r
 res <- query_facet(con) %>%
   filter_category("coronavirusinfection") %>%
   facet_date_range(
@@ -627,62 +673,6 @@ res <- query_facet(con) %>%
 #>  9 2020-08-23 00:00:00  2915
 #> 10 2020-08-23 00:00:00  2491
 #> # … with 470 more rows
-```
-
-The function `agg_by_field()`, and all subsequent query modifying functions take a query object as its input and emit a modified query object as its output. This makes these functions suitable for piping, which is a convenient and expressive way to build queries.
-
-To see what this new query looks like:
-
-```r
-get_query(qry)
-```
-
-We can retrieve the result of this query by calling `run()`.
-
-```r
-run(qry)
-```
-
-We can continue to add more dimensions to the facet using pipes. For example, to count the frequency of both the fields "tags" and "affectedCountriesIso":
-
-```r
-query_facet(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_field("affectedCountriesIso") %>%
-  run()
-```
-
-### Faceting by Date Binning
-
-Suppose we want to get daily counts for each tag in the data. We can use a function `agg_by_date()`, which by default facets daily.
-
-Here, we facet on a document's field "processedOnDate".
-
-```r
-query_facet(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_date("processedOnDate") %>%
-  run()
-```
-
-For finer control over the date binning, we can use functions `calendar_interval()` and `fixed_interval()`.
-
-For example, to bin on calendar week:
-
-```r
-query_facet(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_date("processedOnDate", calendar_interval("1w")) %>%
-  run()
-```
-
-And to bin on every 10 days:
-
-```r
-query_facet(con) %>%
-  agg_by_field("tags") %>%
-  agg_by_date("processedOnDate", fixed_interval("10d")) %>%
-  run()
 ```
 
 ## String queries
