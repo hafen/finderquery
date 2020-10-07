@@ -1,0 +1,12 @@
+[Unit]
+Description=Plumber API
+# After=postgresql
+# (or mariadb, mysql, etc if you use a DB with Plumber, otherwise leave this commented)
+
+[Service]
+ExecStart=/usr/bin/Rscript -e "library(plumber); p <- pr('plumber.R'); pr_run(p, port=8001, host='0.0.0.0')"
+Restart=on-abnormal
+WorkingDirectory=/home/docker/api/
+
+[Install]
+WantedBy=multi-user.target

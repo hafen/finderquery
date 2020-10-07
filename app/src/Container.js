@@ -19,6 +19,8 @@ import {
   fields, vCountries, vLanguages, vCategories, vSources, vDuplicate
 } from './options.js';
 
+const apiBase = process.env.REACT_APP_API_BASE ? process.env.REACT_APP_API_BASE : 'http://localhost:8000';
+
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1
@@ -181,7 +183,7 @@ export default function Container() {
     const fmt = (x) => x === null ? null : format(x, 'yyyy-MM-dd');
     const dd = (x, y) => `["${fmt(x)}","${fmt(y)}"]`;
   
-    const url = `http://localhost:8000/get_ndocs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}`;
+    const url = `${apiBase}/get_ndocs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}`;
     // &fields=${JSON.stringify(stFields)}
     
     setNDocsLoading(true)
@@ -229,7 +231,7 @@ export default function Container() {
     const fmt = (x) => x === null ? null : format(x, 'yyyy-MM-dd');
     const dd = (x, y) => `["${fmt(x)}","${fmt(y)}"]`;
   
-    const url = `http://localhost:8000/download_docs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}&fields=${JSON.stringify(stFields)}&path=/tmp/__finder_downloads__/${queryName}`;
+    const url = `${apiBase}/download_docs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}&fields=${JSON.stringify(stFields)}&path=/tmp/__finder_downloads__/${queryName}`;
 
     setDocsDownloading(true)
     fetch(url)
@@ -246,11 +248,11 @@ export default function Container() {
         enqueueSnackbar((
           <div>
             {`Query '${queryName}' success...`}
-            <Button href={`http://localhost:8000/static/${queryName}.zip`}>
+            <Button href={`${apiBase}/static/${queryName}.zip`}>
               Download
             </Button>
           </div>
-        ), { 
+        ), {
           variant: 'success',
           persist: true
         });

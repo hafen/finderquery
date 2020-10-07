@@ -21,3 +21,5 @@ The REST API is built using [Plumber](https://www.rplumber.io).
 The web app is written using [React](https://reactjs.org) and calls the API to build the query and download the documents.
 
 ![](app_screenshot.png)
+
+Note that "multiselect" text fields in the application are pre-populated with all of the unique values found in the data as of September 2020. In theory we could expose API endpoints that always get the latest values, but this would slow down the initial app load considerably. Instead, we can update these values every few months or on demand...
