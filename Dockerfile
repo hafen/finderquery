@@ -38,13 +38,3 @@ WORKDIR /
 
 RUN systemctl start nginx
 RUN systemctl start plumber-api
-
-# docker run -ti r-base:4.0.2 bash
-# docker exec -ti fq bash
-# docker build . -t finderquery
-# # run the container, mapping port 8000 on the container to port 8000 locally
-# docker run --rm -td -p 8000:8000 --name=fq finderquery
-
-# # start nginx and plumber-api services
-# docker exec fq systemctl start nginx
-# docker exec fq systemctl start plumber-api
