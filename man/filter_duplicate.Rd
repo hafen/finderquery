@@ -8,6 +8,8 @@ filter_duplicate(query, bool = FALSE)
 }
 \arguments{
 \item{query}{a \code{\link[=query_fetch]{query_fetch()}} or \code{\link[=query_facet]{query_facet()}} object}
+
+\item{bool}{TRUE or FALSE}
 }
 \description{
 Filter duplicate

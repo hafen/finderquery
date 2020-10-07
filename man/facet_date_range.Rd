@@ -6,6 +6,17 @@
 \usage{
 facet_date_range(query, field = c("pubdate", "indexdate"), start, end, gap)
 }
+\arguments{
+\item{query}{a \code{\link[=query_facet]{query_facet()}} object}
+
+\item{field}{field name (one of "pubdate" or "indexdate")}
+
+\item{start}{start date}
+
+\item{end}{end date}
+
+\item{gap}{gap object from \code{\link[=range_gap]{range_gap()}}}
+}
 \description{
 Specify a date range facet
 }

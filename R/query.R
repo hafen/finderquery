@@ -150,6 +150,7 @@ run_query_fetch <- function(query) {
 }
 
 # facet queries always read into memory and transform to a nice format
+#' @importFrom tibble tibble
 run_query_facet <- function(query) {
   if (is.null(query$facet))
     stop("Must specify faceting.")

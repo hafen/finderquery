@@ -16,8 +16,9 @@ Imports:
     magrittr,
     curl,
     jsonlite,
-    xml2
-RoxygenNote: 7.1.0
+    xml2,
+    tibble
+RoxygenNote: 7.1.1
 Suggests: 
     knitr,
     rmarkdown

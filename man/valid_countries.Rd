@@ -6,6 +6,9 @@
 \usage{
 valid_countries(con)
 }
+\arguments{
+\item{con}{A finder connection object from \code{\link[=finder_connect]{finder_connect()}}.}
+}
 \description{
 Get a vector of all unique "country" values
 }

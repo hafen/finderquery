@@ -6,6 +6,11 @@
 \usage{
 range_gap(num = 1, units = c("DAY", "MINUTE", "HOUR", "WEEK", "MONTH", "YEAR"))
 }
+\arguments{
+\item{num}{the number of units to use for a date gap}
+
+\item{units}{the units to use for a date gap, one of "DAY", "MINUTE", "HOUR", "WEEK", "MONTH", "YEAR"}
+}
 \description{
 Specify a 'gap' parameter for facet_range queries
 }

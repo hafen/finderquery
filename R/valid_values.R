@@ -10,24 +10,28 @@ queryable_fields <- function() {
 # setdiff(tolower(selectable_fields()), queryable_fields())
 
 #' Get a vector of all unique "language" values
+#' @param con A finder connection object from [finder_connect()].
 #' @export
 valid_languages <- function(con) {
   get_valid_vals(con, "language")
 }
 
 #' Get a vector of all unique "category" values
+#' @param con A finder connection object from [finder_connect()].
 #' @export
 valid_categories <- function(con) {
   get_valid_vals(con, "category")
 }
 
 #' Get a vector of all unique "country" values
+#' @param con A finder connection object from [finder_connect()].
 #' @export
 valid_countries <- function(con) {
   get_valid_vals(con, "country")
 }
 
 #' Get a vector of all unique "source" values
+#' @param con A finder connection object from [finder_connect()].
 #' @export
 valid_sources <- function(con) {
   get_valid_vals(con, "source")
@@ -40,12 +44,14 @@ valid_sources <- function(con) {
 # }
 
 #' Get a vector of all unique "quotecategory" values
+#' @param con A finder connection object from [finder_connect()].
 #' @export
 valid_quotecategory <- function(con) {
   get_valid_vals(con, "quotecategory")
 }
 
 #' Get a vector of all unique "duplicate" values
+#' @param con A finder connection object from [finder_connect()].
 #' @export
 valid_duplicate <- function(con) {
   get_valid_vals(con, "duplicate")

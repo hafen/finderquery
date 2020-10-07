@@ -9,6 +9,8 @@ filter_text(query, text)
 }
 \arguments{
 \item{query}{a \code{\link[=query_fetch]{query_fetch()}} or \code{\link[=query_facet]{query_facet()}} object}
+
+\item{text}{text to filter}
 }
 \description{
 Filter based on text found in title, description, or text, including

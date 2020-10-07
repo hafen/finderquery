@@ -11,6 +11,7 @@ query_facet <- function(con) {
 
 #' Specify a field to facet by
 #' @param query a [query_facet()] object
+#' @param field field name (see [facetable_fields()] for all possibilities)
 #' @param sort Controls how faceted results are sorted.
 # sort: Sort the constraints by count (highest count first).
 # index: Return the constraints sorted in their index order (lexicographic by indexed term). For terms in the ASCII range, this will be alphabetically sorted.
@@ -78,6 +79,8 @@ facetable_fields <- function() {
 # }
 
 #' Specify a 'gap' parameter for facet_range queries
+#' @param num the number of units to use for a date gap
+#' @param units the units to use for a date gap, one of "DAY", "MINUTE", "HOUR", "WEEK", "MONTH", "YEAR"
 #' @export
 range_gap <- function(
   num = 1,
@@ -89,6 +92,11 @@ range_gap <- function(
 }
 
 #' Specify a date range facet
+#' @param query a [query_facet()] object
+#' @param field field name (one of "pubdate" or "indexdate")
+#' @param start start date
+#' @param end end date
+#' @param gap gap object from [range_gap()]
 #' @export
 facet_date_range <- function(query, field = c("pubdate", "indexdate"), start, end, gap) {
   check_class(query, c("query_facet"), "facet_by")

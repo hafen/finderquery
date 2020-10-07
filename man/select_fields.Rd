@@ -6,6 +6,11 @@
 \usage{
 select_fields(query, fields = NULL)
 }
+\arguments{
+\item{query}{a \code{\link[=query_fetch]{query_fetch()}} object}
+
+\item{fields}{a vector of field names (see \code{\link[=selectable_fields]{selectable_fields()}})}
+}
 \description{
 Specify fields to return in the results
 }

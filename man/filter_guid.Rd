@@ -8,6 +8,8 @@ filter_guid(query, value)
 }
 \arguments{
 \item{query}{a \code{\link[=query_fetch]{query_fetch()}} or \code{\link[=query_facet]{query_facet()}} object}
+
+\item{value}{guid to filter}
 }
 \description{
 Filter guid

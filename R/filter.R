@@ -20,6 +20,7 @@ filter_country <- function(query, terms) {
 
 #' Filter duplicate
 #' @param query a [query_fetch()] or [query_facet()] object
+#' @param bool TRUE or FALSE
 #' @export
 filter_duplicate <- function(query, bool = FALSE) {
   check_class(query, c("query_facet", "query_fetch"), "filter_duplicate")
@@ -50,6 +51,7 @@ filter_georssid <- function(query, terms) {
 
 #' Filter guid
 #' @param query a [query_fetch()] or [query_facet()] object
+#' @param value guid to filter
 #' @export
 filter_guid <- function(query, value) {
   check_class(query, c("query_facet", "query_fetch"), "filter_guid")
@@ -60,6 +62,9 @@ filter_guid <- function(query, value) {
 
 #' Filter indexdate
 #' @param query a [query_fetch()] or [query_facet()] object
+#' @param from start date
+#' @param to end date
+#' @param on exact date (if specified, from and to are ignored)
 #' @export
 filter_indexdate <- function(query, from = NULL, to = NULL, on = NULL) {
   check_class(query, c("query_facet", "query_fetch"), "filter_indexdate")
@@ -79,6 +84,9 @@ filter_language <- function(query, terms) {
 
 #' Filter pubdate
 #' @param query a [query_fetch()] or [query_facet()] object
+#' @param from start date
+#' @param to end date
+#' @param on exact date (if specified, from and to are ignored)
 #' @export
 filter_pubdate <- function(query, from = NULL, to = NULL, on = NULL) {
   check_class(query, c("query_facet", "query_fetch"), "filter_pubdate")
@@ -133,6 +141,7 @@ filter_source <- function(query, terms) {
 #' Filter based on text found in title, description, or text, including 
 #'   translations
 #' @param query a [query_fetch()] or [query_facet()] object
+#' @param text text to filter
 #' @export
 filter_text <- function(query, text) {
   check_class(query, c("query_facet", "query_fetch"), "filter_text")
@@ -152,6 +161,9 @@ filter_text <- function(query, text) {
 
 #' Filter tonality
 #' @param query a [query_fetch()] or [query_facet()] object
+#' @param value exact tonality value to filter on (if specified, from and to are ignored)
+#' @param from lower range to filter on
+#' @param to upper range to filter on
 #' @export
 filter_tonality <- function(query, value = NULL, from = NULL, to = NULL) {
   check_class(query, c("query_facet", "query_fetch"), "filter_tonality")

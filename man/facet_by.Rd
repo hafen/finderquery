@@ -16,6 +16,8 @@ facet_by(
 \arguments{
 \item{query}{a \code{\link[=query_facet]{query_facet()}} object}
 
+\item{field}{field name (see \code{\link[=facetable_fields]{facetable_fields()}} for all possibilities)}
+
 \item{limit}{Controls how many constraints should be returned for each facet.}
 
 \item{sort}{Controls how faceted results are sorted.}

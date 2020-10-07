@@ -1,6 +1,11 @@
 #' Specify field to sort on
+#' @param query a [query_fetch()] object
+#' @param field the field name to sort by (see [queryable_fields()])
+#' @param asc if TRUE, will sort ascending, if FALSE, descending
 #' @export
 sort_by <- function(query, field, asc = TRUE) {
+  check_class(query, c("query_fetch"), "sort_by")
+
   if (!tolower(field) %in% tolower(queryable_fields()))
     stop("'sort_by' field: ", field, " is not a queryable/sortable field name.",
       call. = FALSE)
@@ -11,6 +16,8 @@ sort_by <- function(query, field, asc = TRUE) {
 }
 
 #' Specify fields to return in the results
+#' @param query a [query_fetch()] object
+#' @param fields a vector of field names (see [selectable_fields()])
 #' @export
 select_fields <- function(query, fields = NULL) {
   if (length(query$select) > 0)

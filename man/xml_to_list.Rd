@@ -4,7 +4,10 @@
 \alias{xml_to_list}
 \title{Convert Finder xml result into a more convenient R list format}
 \usage{
-xml_to_list(x, fields = NULL)
+xml_to_list(x)
+}
+\arguments{
+\item{x}{an object of class "xml_document" obtained from \code{\link[=query_fetch]{query_fetch()}}}
 }
 \description{
 Convert Finder xml result into a more convenient R list format

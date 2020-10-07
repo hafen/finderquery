@@ -1,6 +1,7 @@
 #' Convert Finder xml result into a more convenient R list format
+#' @param x an object of class "xml_document" obtained from [query_fetch()]
 #' @export
-xml_to_list <- function(x, fields = NULL) {
+xml_to_list <- function(x) {
   x <- xml2::as_list(x)
   if (is.null(x$rss$channel))
     stop("Output is not in the expected format.", call. = FALSE)

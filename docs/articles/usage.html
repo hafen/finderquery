@@ -89,16 +89,20 @@
 <h1 class="hasAnchor">
 <a href="#setup" class="anchor"></a>Setup</h1>
 <p>The first thing to do is to establish a connection with the Finder server by specifying its IP address and optionally the port. In our case, <code>10.49.4.6</code>.</p>
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">finderquery</span>)
+<div class="sourceCode" id="cb1"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">finderquery</span>)
 
-<span class="no">con</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/finder_connect.html">finder_connect</a></span>(<span class="st">"10.49.4.6"</span>)</pre></body></html></div>
+<span class="kw">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finder_connect.html">finder_connect</a></span>(<span class="st">"10.49.4.6"</span>)
+</pre></div>
 <p>This connection object is passed to queries so it knows where to go to run the query.</p>
 <p>Note that if you are working in an R console on the <code>.18</code> or <code>.19</code> machines, you may need to run the following for the Solr server to be reachable:</p>
-<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.unsetenv</a></span>(<span class="st">"NO_PROXY"</span>)
+<div class="sourceCode" id="cb2"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.unsetenv</a></span>(<span class="st">"NO_PROXY"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.unsetenv</a></span>(<span class="st">"HTTPS_PROXY"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.unsetenv</a></span>(<span class="st">"HTTP_PROXY"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.unsetenv</a></span>(<span class="st">"https_proxy"</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.unsetenv</a></span>(<span class="st">"http_proxy"</span>)</pre></body></html></div>
+<span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.unsetenv</a></span>(<span class="st">"http_proxy"</span>)
+</pre></div>
 </div>
 <div id="queries" class="section level1">
 <h1 class="hasAnchor">
@@ -150,16 +154,23 @@
 </ul>
 <p><strong>Note</strong>: Fetch queries automatically take care of <a href="https://lucene.apache.org/solr/guide/6_6/pagination-of-results.html">pagination</a> using cursors to retrieve potentially very large sets of documents. The pagination limit is 10k documents, so iterative queries are run to fetch these in batches and piece them together upon retrieval.</p>
 <p>Initiating an “empty” query is as easy as the following:</p>
-<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">qry</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb3"><pre class="downlit">
+<span class="kw">qry</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>)
+</pre></div>
 <p>The query can be built upon by passing the <code>qry</code> object to other functions such as the <code>filter_*()</code> functions to further refine the query.</p>
 <p>At any point when constructing a query, the query object can either be passed to: - <code><a href="../reference/get_query.html">get_query()</a></code>: prints out a Solr API call that can be inspected or pasted in a web browser to retrieve the results - <code><a href="../reference/run.html">run()</a></code>: runs the query and returns the documents in the specified <code>format</code></p>
 <p>To see our simple query:</p>
-<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="fu"><a href="../reference/get_query.html">get_query</a></span>(<span class="no">qry</span>)
-<span class="co">#&gt; [1] "op=search&amp;q=*:*&amp;rows=10"</span></pre></body></html></div>
+<div class="sourceCode" id="cb4"><pre class="downlit">
+<span class="fu"><a href="../reference/get_query.html">get_query</a></span>(<span class="kw">qry</span>)
+<span class="co">#&gt; [1] "op=search&amp;q=*:*&amp;rows=10"</span>
+</pre></div>
 <p>To run it:</p>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/run.html">run</a></span>(<span class="no">qry</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb5"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run.html">run</a></span>(<span class="kw">qry</span>)
+</pre></div>
 <p>As stated earlier, by default the returned object is an R-friendly list. The structure is one list element per document:</p>
-<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">res</span>, <span class="fl">1</span>)
+<div class="sourceCode" id="cb6"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="kw">res</span>, <span class="fl">1</span>)
 <span class="co">#&gt; List of 10</span>
 <span class="co">#&gt;  $ :List of 13</span>
 <span class="co">#&gt;   ..- attr(*, "id")= chr "ecuadorenvivo-031d3f5dd16162472d0c4726887f69c1"</span>
@@ -184,9 +195,11 @@
 <span class="co">#&gt;  $ :List of 16</span>
 <span class="co">#&gt;   ..- attr(*, "id")= chr "cleantechnica-d2dd2e280252de07a4524aad60621ffd"</span>
 <span class="co">#&gt;  - attr(*, "class")= chr [1:2] "finder_docs" "list"</span>
-<span class="co">#&gt;  - attr(*, "meta")=List of 6</span></pre></body></html></div>
+<span class="co">#&gt;  - attr(*, "meta")=List of 6</span>
+</pre></div>
 <p>The number of fields in a document varies per document, depending on its content. To look at the structure of the first document:</p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">res</span><span class="kw">[[</span><span class="fl">1</span>]], <span class="fl">1</span>)
+<div class="sourceCode" id="cb7"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="kw">res</span>[[<span class="fl">1</span>]], <span class="fl">1</span>)
 <span class="co">#&gt; List of 13</span>
 <span class="co">#&gt;  $ title      :List of 2</span>
 <span class="co">#&gt;  $ link       :List of 1</span>
@@ -214,20 +227,25 @@
 <span class="co">#&gt;  $ tonality   :List of 1</span>
 <span class="co">#&gt;  $ text       :List of 1</span>
 <span class="co">#&gt;   ..- attr(*, "wordCount")= chr "188"</span>
-<span class="co">#&gt;  - attr(*, "id")= chr "ecuadorenvivo-031d3f5dd16162472d0c4726887f69c1"</span></pre></body></html></div>
+<span class="co">#&gt;  - attr(*, "id")= chr "ecuadorenvivo-031d3f5dd16162472d0c4726887f69c1"</span>
+</pre></div>
 <p>Note that the structure of returned documents is difficult to flatten to a tabular format. Most fields can appear a variable number of times. Such as the title for this first document, for example.</p>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">res</span><span class="kw">[[</span><span class="fl">1</span>]]$<span class="no">title</span>
+<div class="sourceCode" id="cb8"><pre class="downlit">
+<span class="kw">res</span>[[<span class="fl">1</span>]]<span class="op">$</span><span class="kw">title</span>
 <span class="co">#&gt; [[1]]</span>
 <span class="co">#&gt; [1] "Solucionan problema de acumulación de aguas en Pascuales | Municipio de Guayaquil"</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; [[2]]</span>
 <span class="co">#&gt; [1] "Solve problem of water cumulation Pascuales' municipality of Guayaquil"</span>
 <span class="co">#&gt; attr(,"lang")</span>
-<span class="co">#&gt; [1] "en"</span></pre></body></html></div>
+<span class="co">#&gt; [1] "en"</span>
+</pre></div>
 <p>In addition to fields appearing an unpredictable number of times, they also have attributes that are often important to preserve, but are not always predictable. In this case there is an attribute indicating that the second title is an english translation. Preserving attributes also makes flattening more difficult.</p>
 <p>Recall that the default fetch query returns 10 documents. We can see how many total documents match the query parameters by using a convenience function <code><a href="../reference/n_docs.html">n_docs()</a></code> on our output:</p>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="fu"><a href="../reference/n_docs.html">n_docs</a></span>(<span class="no">res</span>)
-<span class="co">#&gt; 9004209</span></pre></body></html></div>
+<div class="sourceCode" id="cb9"><pre class="downlit">
+<span class="fu"><a href="../reference/n_docs.html">n_docs</a></span>(<span class="kw">res</span>)
+<span class="co">#&gt; 9004209</span>
+</pre></div>
 <!-- Note that for some reason an empty query returns a smaller number of documents than is actually available in the document store. -->
 </div>
 <div id="adding-filters-to-fetch-queries" class="section level3">
@@ -248,64 +266,86 @@
 <p><code><a href="../reference/filter_category.html">filter_category()</a></code> allows you to filter on the <code>category</code> document field.</p>
 <p>Note that is convenient to build queries using the “pipe” (“<code><a href="https://rdrr.io/pkg/magrittr/man/pipe.html">%&gt;%</a></code>”) operator, which allows us to string together multiple commands, including <code><a href="../reference/run.html">run()</a></code> at the end to run the query.</p>
 <p>Here we filter to documents that contain the “CoronavirusInfection” category.</p>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/run.html">run</a></span>()</pre></body></html></div>
+<div class="sourceCode" id="cb10"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/run.html">run</a></span>()
+</pre></div>
 <p>To see a list of category values that exist in the data:</p>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="../reference/valid_categories.html">valid_categories</a></span>(<span class="no">con</span>))
+<div class="sourceCode" id="cb11"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="../reference/valid_categories.html">valid_categories</a></span>(<span class="kw">con</span>))
 <span class="co">#&gt; [1] "abrin"           "acaricides"      "acinetobacter"   "acremonium"     </span>
-<span class="co">#&gt; [5] "acrolein"        "acrylamidfurans"</span></pre></body></html></div>
+<span class="co">#&gt; [5] "acrolein"        "acrylamidfurans"</span>
+</pre></div>
 </div>
 <div id="filter_country" class="section level5">
 <h5 class="hasAnchor">
 <a href="#filter_country" class="anchor"></a>filter_country()</h5>
 <p>To filter on documents for which the source comes from Germany or France:</p>
-<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_country.html">filter_country</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"de"</span>, <span class="st">"fr"</span>)) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/run.html">run</a></span>()</pre></body></html></div>
+<div class="sourceCode" id="cb12"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_country.html">filter_country</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"de"</span>, <span class="st">"fr"</span>)) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/run.html">run</a></span>()
+</pre></div>
 <p>Note that when you specify a vector of values, it matches documents where <em>any</em> of those terms are found.</p>
 <p>To see a list of country values that exist in the data:</p>
-<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="../reference/valid_countries.html">valid_countries</a></span>(<span class="no">con</span>))
-<span class="co">#&gt; [1] "ad" "ae" "af" "ag" "ai" "al"</span></pre></body></html></div>
+<div class="sourceCode" id="cb13"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="../reference/valid_countries.html">valid_countries</a></span>(<span class="kw">con</span>))
+<span class="co">#&gt; [1] "ad" "ae" "af" "ag" "ai" "al"</span>
+</pre></div>
 </div>
 <div id="filter_language" class="section level5">
 <h5 class="hasAnchor">
 <a href="#filter_language" class="anchor"></a>filter_language()</h5>
 <p>We can use <code><a href="../reference/filter_language.html">filter_language()</a></code> to filter on languages in the documents:</p>
-<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"de"</span>, <span class="st">"fr"</span>)) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/run.html">run</a></span>()</pre></body></html></div>
+<div class="sourceCode" id="cb14"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"de"</span>, <span class="st">"fr"</span>)) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/run.html">run</a></span>()
+</pre></div>
 <p>To see a list of language values that exist in the data:</p>
-<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="../reference/valid_languages.html">valid_languages</a></span>(<span class="no">con</span>))
-<span class="co">#&gt; [1] "af" "am" "ar" "az" "be" "bg"</span></pre></body></html></div>
+<div class="sourceCode" id="cb15"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="../reference/valid_languages.html">valid_languages</a></span>(<span class="kw">con</span>))
+<span class="co">#&gt; [1] "af" "am" "ar" "az" "be" "bg"</span>
+</pre></div>
 </div>
 <div id="filter_source" class="section level5">
 <h5 class="hasAnchor">
 <a href="#filter_source" class="anchor"></a>filter_source()</h5>
 <p>To filter on the document source, source we can use <code><a href="../reference/filter_source.html">filter_source()</a></code>.</p>
 <p>Here, we filter on documents with source “bbc<em>", where the "</em>” is a wildcard.</p>
-<div class="sourceCode" id="cb16"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_source.html">filter_source</a></span>(<span class="st">"bbc*"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/run.html">run</a></span>()</pre></body></html></div>
+<div class="sourceCode" id="cb16"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_source.html">filter_source</a></span>(<span class="st">"bbc*"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/run.html">run</a></span>()
+</pre></div>
 <p>To inspect the actual sources returned:</p>
-<div class="sourceCode" id="cb17"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="no">res</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="no">x</span>$<span class="no">source</span>)))
+<div class="sourceCode" id="cb17"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="kw">res</span>, <span class="fu">function</span>(<span class="kw">x</span>) <span class="kw">x</span><span class="op">$</span><span class="kw">source</span>)))
 <span class="co">#&gt; [1] "bbc-swahili"           "bbc-health-html"       "bbc-spanish"          </span>
-<span class="co">#&gt; [4] "bbc-portuguese-brasil" "bbcnepalirss"          "bbc-turkce" </span></pre></body></html></div>
+<span class="co">#&gt; [4] "bbc-portuguese-brasil" "bbcnepalirss"          "bbc-turkce" </span>
+</pre></div>
 <p>To see a list of source values that exist in the data:</p>
-<div class="sourceCode" id="cb18"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="../reference/valid_sources.html">valid_sources</a></span>(<span class="no">con</span>))
+<div class="sourceCode" id="cb18"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="../reference/valid_sources.html">valid_sources</a></span>(<span class="kw">con</span>))
 <span class="co">#&gt; [1] "055firenze"       "100noticias"      "10minuta"         "112-utrecht"</span>
-<span class="co">#&gt; [5] "112achterhoek"    "112brabantnieuws"</span></pre></body></html></div>
+<span class="co">#&gt; [5] "112achterhoek"    "112brabantnieuws"</span>
+</pre></div>
 </div>
 <div id="filter_duplicate" class="section level5">
 <h5 class="hasAnchor">
 <a href="#filter_duplicate" class="anchor"></a>filter_duplicate()</h5>
 <p>We can filter on whether the document is flagged as a duplicate or not with <code><a href="../reference/filter_duplicate.html">filter_duplicate()</a></code>:</p>
-<div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>, <span class="kw">max</span> <span class="kw">=</span> <span class="fl">10</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_duplicate.html">filter_duplicate</a></span>(<span class="fl">TRUE</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/run.html">run</a></span>()</pre></body></html></div>
+<div class="sourceCode" id="cb19"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, max = <span class="fl">10</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_duplicate.html">filter_duplicate</a></span>(<span class="fl">TRUE</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/run.html">run</a></span>()
+</pre></div>
 <p>Duplicate is either <code>true</code> or <code>false</code>:</p>
-<div class="sourceCode" id="cb20"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="../reference/valid_duplicate.html">valid_duplicate</a></span>(<span class="no">con</span>))
-<span class="co">#&gt; [1] "false" "true" </span></pre></body></html></div>
+<div class="sourceCode" id="cb20"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="../reference/valid_duplicate.html">valid_duplicate</a></span>(<span class="kw">con</span>))
+<span class="co">#&gt; [1] "false" "true" </span>
+</pre></div>
 </div>
 </div>
 <div id="text-filter" class="section level4">
@@ -313,30 +353,32 @@
 <a href="#text-filter" class="anchor"></a>Text filter</h4>
 <p>The <code><a href="../reference/filter_text.html">filter_text()</a></code> function allows you to specify strings or a vector of strings to search for in the document’s title, description, and document text, including translations.</p>
 <p>Below are some examples of using <code><a href="../reference/filter_text.html">filter_text()</a></code>:</p>
-<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="co"># having word matching either "european" or "commision"</span>
-<span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_text.html">filter_text</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"european"</span>, <span class="st">"commission"</span>)) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb21"><pre class="downlit">
+<span class="co"># having word matching either "european" or "commision"</span>
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_text.html">filter_text</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"european"</span>, <span class="st">"commission"</span>)) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
 <span class="co"># having a word starting with "euro"</span>
-<span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>, <span class="kw">max</span> <span class="kw">=</span> <span class="fl">20</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_text.html">filter_text</a></span>(<span class="st">"euro*"</span>) <span class="kw">%&gt;%</span>
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, max = <span class="fl">20</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_text.html">filter_text</a></span>(<span class="st">"euro*"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
 <span class="co"># having a word that matches "euro?ean" (question mark is single wild card)</span>
-<span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>, <span class="kw">max</span> <span class="kw">=</span> <span class="fl">20</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_text.html">filter_text</a></span>(<span class="st">"euro?ean"</span>) <span class="kw">%&gt;%</span>
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, max = <span class="fl">20</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_text.html">filter_text</a></span>(<span class="st">"euro?ean"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
 <span class="co"># having word that sounds like "europese" (with default edit distance 2)</span>
-<span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>, <span class="kw">max</span> <span class="kw">=</span> <span class="fl">20</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_text.html">filter_text</a></span>(<span class="st">"europese~"</span>) <span class="kw">%&gt;%</span>
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, max = <span class="fl">20</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_text.html">filter_text</a></span>(<span class="st">"europese~"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
 <span class="co"># having word that sounds like "Europian" (with edit distance 1)</span>
-<span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>, <span class="kw">max</span> <span class="kw">=</span> <span class="fl">20</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_text.html">filter_text</a></span>(<span class="st">"Europian~1"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/run.html">run</a></span>()</pre></body></html></div>
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, max = <span class="fl">20</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_text.html">filter_text</a></span>(<span class="st">"Europian~1"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/run.html">run</a></span>()
+</pre></div>
 </div>
 <div id="date-filters" class="section level4">
 <h4 class="hasAnchor">
@@ -344,11 +386,13 @@
 <p>Two date filter functions are available, <code><a href="../reference/filter_pubdate.html">filter_pubdate()</a></code> and <code><a href="../reference/filter_indexdate.html">filter_indexdate()</a></code>, which filter on the publication date and indexed date, respectively.</p>
 <p>These functions have arguments <code>from</code> and <code>to</code> which take a “Date” or “POSIXct” as input. If left unspecified, the filter will be open-ended on that side of the range. Instead of specifying a range, you can also specify <code>on</code> to get all articles on a specific day.</p>
 <p>The example below queries all documents in German that have category “CoronavirusInfection” that were published in the last two days:</p>
-<div class="sourceCode" id="cb22"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(<span class="kw">from</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) - <span class="fl">2</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/run.html">run</a></span>()</pre></body></html></div>
+<div class="sourceCode" id="cb22"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">2</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/run.html">run</a></span>()
+</pre></div>
 <p>Note here that we are stringing multiple filter commands together to get to what we are looking for. You can string as many filters together as you wish, but note that if you apply the same filter twice, the second one will override the first.</p>
 </div>
 <div id="other-filters" class="section level4">
@@ -359,36 +403,40 @@
 <h5 class="hasAnchor">
 <a href="#filter_tonality" class="anchor"></a>filter_tonality()</h5>
 <p><code><a href="../reference/filter_tonality.html">filter_tonality()</a></code> is a special range filter that takes numeric values. In addition to having <code>from</code> and <code>to</code> parameters that behave in the same way as the date range filters, it also has a <code>value</code> parameter which can be used to retrive documents with a specific tonality value.</p>
-<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_tonality.html">filter_tonality</a></span>(<span class="fl">4</span>) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb23"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_tonality.html">filter_tonality</a></span>(<span class="fl">4</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
-<span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="no">res</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="no">x</span>$<span class="no">tonality</span>))
+<span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="kw">res</span>, <span class="fu">function</span>(<span class="kw">x</span>) <span class="kw">x</span><span class="op">$</span><span class="kw">tonality</span>))
 <span class="co">#&gt; [1] "4" "4" "4" "4" "4" "4" "4" "4" "4" "4"</span>
 
 
-<span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_tonality.html">filter_tonality</a></span>(<span class="kw">from</span> <span class="kw">=</span> <span class="fl">4</span>) <span class="kw">%&gt;%</span>
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_tonality.html">filter_tonality</a></span>(from = <span class="fl">4</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
-<span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="no">res</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="no">x</span>$<span class="no">tonality</span>))
-<span class="co">#&gt; [1] "12" "12" "8"  "23" "6"  "14" "9"  "4"  "4"  "10"</span></pre></body></html></div>
+<span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="kw">res</span>, <span class="fu">function</span>(<span class="kw">x</span>) <span class="kw">x</span><span class="op">$</span><span class="kw">tonality</span>))
+<span class="co">#&gt; [1] "12" "12" "8"  "23" "6"  "14" "9"  "4"  "4"  "10"</span>
+</pre></div>
 </div>
 <div id="id-filters" class="section level5">
 <h5 class="hasAnchor">
 <a href="#id-filters" class="anchor"></a>ID filters</h5>
 <p>Additional filters exist to filter on various IDs: <code><a href="../reference/filter_entityid.html">filter_entityid()</a></code>, <code><a href="../reference/filter_georssid.html">filter_georssid()</a></code>, <code><a href="../reference/filter_guid.html">filter_guid()</a></code>.</p>
 <p>Below is an example of filtering on guid:</p>
-<div class="sourceCode" id="cb24"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>, <span class="kw">max</span> <span class="kw">=</span> <span class="fl">5</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_guid.html">filter_guid</a></span>(<span class="st">"washtimes-*"</span>) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb24"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, max = <span class="fl">5</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_guid.html">filter_guid</a></span>(<span class="st">"washtimes-*"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
-<span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="no">res</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="no">x</span>$<span class="no">guid</span>))
+<span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="kw">res</span>, <span class="fu">function</span>(<span class="kw">x</span>) <span class="kw">x</span><span class="op">$</span><span class="kw">guid</span>))
 <span class="co">#&gt; [1] "washtimes-91e4808dcddb198e95b7583fdb162225"</span>
 <span class="co">#&gt; [2] "washtimes-b1f724b70e57280dbd42ed82763fb341"</span>
 <span class="co">#&gt; [3] "washtimes-3ddcef4e8631e60586391695c43a82ac"</span>
 <span class="co">#&gt; [4] "washtimes-7a44cd4213b3a663664da786b1242a38"</span>
-<span class="co">#&gt; [5] "washtimes-73daa638c1adafe89815c7c3f0c42e06"</span></pre></body></html></div>
+<span class="co">#&gt; [5] "washtimes-73daa638c1adafe89815c7c3f0c42e06"</span>
+</pre></div>
 </div>
 </div>
 </div>
@@ -397,24 +445,28 @@
 <a href="#specifying-fields-to-sort-on" class="anchor"></a>Specifying fields to sort on</h3>
 <p>Another operation available only for fetch queries is <code>sort_docs()</code>, which allows you to specify fields to sort by as part of the fetch.</p>
 <p>For example, here we run a query similar to one shown earlier where we additionaly sort the results by date of publication.</p>
-<div class="sourceCode" id="cb25"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(<span class="kw">from</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) - <span class="fl">2</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/sort_by.html">sort_by</a></span>(<span class="st">"pubdate"</span>, <span class="kw">asc</span> <span class="kw">=</span> <span class="fl">FALSE</span>) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb25"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">2</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/sort_by.html">sort_by</a></span>(<span class="st">"pubdate"</span>, asc = <span class="fl">FALSE</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
-<span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">res</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="no">x</span>$<span class="no">pubDate</span>))
+<span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="kw">res</span>, <span class="fu">function</span>(<span class="kw">x</span>) <span class="kw">x</span><span class="op">$</span><span class="kw">pubDate</span>))
 <span class="co">#&gt;  [1] "2020-09-12T21:40+0000" "2020-09-12T21:40+0000" "2020-09-12T21:40+0000"</span>
 <span class="co">#&gt;  [4] "2020-09-12T21:39+0000" "2020-09-12T21:35+0000" "2020-09-12T21:35+0000"</span>
 <span class="co">#&gt;  [7] "2020-09-12T21:32+0000" "2020-09-12T21:32+0000" "2020-09-12T21:31+0000"</span>
-<span class="co">#&gt; [10] "2020-09-12T21:30+0000"</span></pre></body></html></div>
+<span class="co">#&gt; [10] "2020-09-12T21:30+0000"</span>
+</pre></div>
 <p>To see what fields are available to sort on:</p>
-<div class="sourceCode" id="cb26"><html><body><pre class="r"><span class="fu"><a href="../reference/queryable_fields.html">queryable_fields</a></span>()
+<div class="sourceCode" id="cb26"><pre class="downlit">
+<span class="fu"><a href="../reference/queryable_fields.html">queryable_fields</a></span>()
 <span class="co">#&gt;  [1] "language"      "category"      "country"       "source"       </span>
 <span class="co">#&gt;  [5] "quotecategory" "duplicate"     "tonality"      "entityid"     </span>
 <span class="co">#&gt;  [9] "guid"          "indexdate"     "pubdate"       "quotetext"    </span>
-<span class="co">#&gt; [13] "text"          "quotewho"      "quoteabout"    "georssid"</span></pre></body></html></div>
+<span class="co">#&gt; [13] "text"          "quotewho"      "quoteabout"    "georssid"</span>
+</pre></div>
 </div>
 <div id="specifying-fields-to-return" class="section level3">
 <h3 class="hasAnchor">
@@ -422,42 +474,52 @@
 <p>An operation available only for fetch queries, <code><a href="../reference/select_fields.html">select_fields()</a></code>, allows us to specify which fields should be returned for each document. This is useful if documents contain some fields that are very large and we don’t want to include them in our results.</p>
 <p>Note that, to our knowledge, Finder does not provide a way to specify these fields at the time the query is run, so all fields are returned by the query and then fields are removed after being fetched. This means that there are not performance gains in terms of network transfer time, but there are gains in final file size.</p>
 <p>To see what values are acceptable for a selectable field:</p>
-<div class="sourceCode" id="cb27"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/pkg/finderquery/man/selectable_fields.html">selectable_fields</a></span>()
+<div class="sourceCode" id="cb27"><pre class="downlit">
+<span class="fu"><a href="../reference/selectable_fields.html">selectable_fields</a></span>()
 <span class="co">#&gt;  [1] "category"    "contentType" "description" "enclosure"   "entity"     </span>
 <span class="co">#&gt;  [6] "favicon"     "fullgeo"     "georss"      "guid"        "keyword"    </span>
 <span class="co">#&gt; [11] "language"    "link"        "location"    "pubDate"     "quote"      </span>
 <span class="co">#&gt; [16] "relevance"   "source"      "text"        "title"       "tonality"   </span>
-<span class="co">#&gt; [21] "translate"</span></pre></body></html></div>
+<span class="co">#&gt; [21] "translate"</span>
+</pre></div>
 <p>Note that these do not exactly match the fields that we can filter on. What is represented in a document vs. what is exposed by Finder to query on are not necessarily the same thing.</p>
 <p>Suppose we have our same query as before, but we only want to pull out the document title and publication date:</p>
-<div class="sourceCode" id="cb28"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(<span class="kw">from</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) - <span class="fl">2</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/sort_by.html">sort_by</a></span>(<span class="st">"pubdate"</span>, <span class="kw">asc</span> <span class="kw">=</span> <span class="fl">FALSE</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/select_fields.html">select_fields</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"title"</span>, <span class="st">"pubDate"</span>)) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/run.html">run</a></span>()</pre></body></html></div>
+<div class="sourceCode" id="cb28"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">2</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/sort_by.html">sort_by</a></span>(<span class="st">"pubdate"</span>, asc = <span class="fl">FALSE</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/select_fields.html">select_fields</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"title"</span>, <span class="st">"pubDate"</span>)) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/run.html">run</a></span>()
+</pre></div>
 </div>
 <div id="fetch-output-formats" class="section level3">
 <h3 class="hasAnchor">
 <a href="#fetch-output-formats" class="anchor"></a>Fetch output formats</h3>
 <p>All of the results of queries above have used the default output format of “list”, where the xml that is returned from the query is transformed to an R-friendly list as shown earlier.</p>
 <p>If we instead specify that the output format is “file”, a path is returned which we can read in or do something else with:</p>
-<div class="sourceCode" id="cb29"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>, <span class="kw">format</span> <span class="kw">=</span> <span class="st">"file"</span>) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb29"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, format = <span class="st">"file"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
-<span class="no">res</span>
-<span class="co">#&gt; [1] "/tmp/Rtmpf3ZFDa/file13cb810cbc6cb.xml"</span></pre></body></html></div>
+<span class="kw">res</span>
+<span class="co">#&gt; [1] "/tmp/Rtmpf3ZFDa/file13cb810cbc6cb.xml"</span>
+</pre></div>
 <p>If we specify the format to be “xml”, then the raw xml is read into R using the xml2 package.</p>
-<div class="sourceCode" id="cb30"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>, <span class="kw">format</span> <span class="kw">=</span> <span class="st">"xml"</span>) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb30"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, format = <span class="st">"xml"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
-<span class="no">res</span>
+<span class="kw">res</span>
 <span class="co">#&gt; {xml_document}</span>
 <span class="co">#&gt; &lt;rss version="2.0" xmlns:emm="http://emm.jrc.it" xmlns:iso="http://www.iso.org/3166" xmlns:gphin="http://gphin.canada.ca"&gt;</span>
-<span class="co">#&gt; [1] &lt;channel&gt;\n  &lt;title/&gt;\n  &lt;pubDate&gt;Sat, 12 Sep 2020 21:34:33 UTC&lt;/pubDate&gt;\n  &lt; ...```</span></pre></body></html></div>
+<span class="co">#&gt; [1] &lt;channel&gt;\n  &lt;title/&gt;\n  &lt;pubDate&gt;Sat, 12 Sep 2020 21:34:33 UTC&lt;/pubDate&gt;\n  &lt; ...```</span>
+</pre></div>
 <p>Note that we can convert this to our list format with the following:</p>
-<div class="sourceCode" id="cb31"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/xml_to_list.html">xml_to_list</a></span>(<span class="no">res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb31"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/xml_to_list.html">xml_to_list</a></span>(<span class="kw">res</span>)
+</pre></div>
 </div>
 <div id="fetching-to-disk" class="section level3">
 <h3 class="hasAnchor">
@@ -466,38 +528,44 @@
 <p>In a many cases we may wish to do a bulk download of many articles. If we specify a <code>path</code> argument to <code><a href="../reference/query_fetch.html">query_fetch()</a></code>, the results will be written in batches to the specified directory.</p>
 <p>When running a potentially large query, it is good to first run it with <code>max = 0</code> so that no documents are returned. Queries that may involve a large number of documents but do not return any documents can run fairly quickly, and we can examine the results to find out how many documents match the query parameters and whether it would be a good idea to try to download them.</p>
 <p>For example, with a query similar to what we specified earlier, suppose we want to get all documents in the last 5 days that are in German and have the “CoronavirusInfection” category.</p>
-<div class="sourceCode" id="cb32"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>, <span class="kw">max</span> <span class="kw">=</span> <span class="fl">0</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(<span class="kw">from</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) - <span class="fl">5</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/sort_by.html">sort_by</a></span>(<span class="st">"pubdate"</span>, <span class="kw">asc</span> <span class="kw">=</span> <span class="fl">FALSE</span>) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb32"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, max = <span class="fl">0</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">5</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/sort_by.html">sort_by</a></span>(<span class="st">"pubdate"</span>, asc = <span class="fl">FALSE</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
-<span class="fu"><a href="../reference/n_docs.html">n_docs</a></span>(<span class="no">res</span>)
-<span class="co">#&gt; [1] 14032</span></pre></body></html></div>
+<span class="fu"><a href="../reference/n_docs.html">n_docs</a></span>(<span class="kw">res</span>)
+<span class="co">#&gt; [1] 14032</span>
+</pre></div>
 <p>We see that there are about 14k documents, which is not a lot to try to download.</p>
 <p>Now, to get all of these documents with pagination, we can set <code>max = -1</code> and provide a directory to write the output to:</p>
-<div class="sourceCode" id="cb33"><html><body><pre class="r"><span class="no">tf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempfile</a></span>()
-<span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span>(<span class="no">tf</span>)
+<div class="sourceCode" id="cb33"><pre class="downlit">
+<span class="kw">tf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempfile</a></span>()
+<span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span>(<span class="kw">tf</span>)
 
-<span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="no">con</span>, <span class="kw">max</span> <span class="kw">=</span> -<span class="fl">1</span>, <span class="kw">format</span> <span class="kw">=</span> <span class="st">"file"</span>, <span class="kw">path</span> <span class="kw">=</span> <span class="no">tf</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(<span class="kw">from</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) - <span class="fl">5</span>) <span class="kw">%&gt;%</span>
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, max = <span class="op">-</span><span class="fl">1</span>, format = <span class="st">"file"</span>, path = <span class="kw">tf</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">5</span>) <span class="op">%&gt;%</span>
   <span class="co"># select_fields("text") %&gt;%</span>
-  <span class="fu"><a href="../reference/sort_by.html">sort_by</a></span>(<span class="st">"pubdate"</span>, <span class="kw">asc</span> <span class="kw">=</span> <span class="fl">FALSE</span>) <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="../reference/sort_by.html">sort_by</a></span>(<span class="st">"pubdate"</span>, asc = <span class="fl">FALSE</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 <span class="co">#&gt; 10000 documents fetched (71%)...</span>
 <span class="co">#&gt; 14032 documents fetched (100%)...</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span>(<span class="no">tf</span>)
-<span class="co">#&gt; [1] "out0001.xml" "out0002.xml"</span></pre></body></html></div>
+<span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span>(<span class="kw">tf</span>)
+<span class="co">#&gt; [1] "out0001.xml" "out0002.xml"</span>
+</pre></div>
 <p>The ~14k documents were downloaded over two files located in the output directory we specified.</p>
 <p>Note that since 14k documents isn’t that large, we may want to read them all into memory in R in the more convenient list format:</p>
-<div class="sourceCode" id="cb34"><html><body><pre class="r"><span class="no">xml</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span>(<span class="no">tf</span>, <span class="kw">full.names</span> <span class="kw">=</span> <span class="fl">TRUE</span>), <span class="kw pkg">xml2</span><span class="kw ns">::</span><span class="no"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_xml</a></span>)
-<span class="no">docs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="no">xml</span>,<span class="no">xml_to_list</span>), <span class="kw">recursive</span> <span class="kw">=</span> <span class="fl">FALSE</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="no">docs</span>)
-<span class="co">#&gt; [1] 14032</span></pre></body></html></div>
+<div class="sourceCode" id="cb34"><pre class="downlit">
+<span class="kw">xml</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span>(<span class="kw">tf</span>, full.names = <span class="fl">TRUE</span>), <span class="kw">xml2</span>::<span class="kw"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_xml</a></span>)
+<span class="kw">docs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="kw">xml</span>,<span class="kw">xml_to_list</span>), recursive = <span class="fl">FALSE</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="kw">docs</span>)
+<span class="co">#&gt; [1] 14032</span>
+</pre></div>
 </div>
 </div>
 <div id="facet-gueries" class="section level2">
@@ -521,25 +589,30 @@
 <h3 class="hasAnchor">
 <a href="#initiating-a-guery" class="anchor"></a>Initiating a guery</h3>
 <p>To initiate a facet query, we use the function <code><a href="../reference/query_facet.html">query_facet()</a></code>, and pass it our connection object.</p>
-<div class="sourceCode" id="cb35"><html><body><pre class="r"><span class="no">query</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="no">con</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb35"><pre class="downlit">
+<span class="kw">query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>)
+</pre></div>
 <p>Similarly to fetch queries, we can call <code><a href="../reference/get_query.html">get_query()</a></code> or <code><a href="../reference/run.html">run()</a></code> to print the query string or run the query.</p>
 </div>
 <div id="faceting-by-fields" class="section level3">
 <h3 class="hasAnchor">
 <a href="#faceting-by-fields" class="anchor"></a>Faceting by fields</h3>
 <p>Suppose we want to tabulate the frequency of all of the categories in the documents over the last two days. We can do this by adding <code><a href="../reference/facet_by.html">facet_by()</a></code> to our query, specifying the field name “category”.</p>
-<div class="sourceCode" id="cb36"><html><body><pre class="r"><span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(<span class="kw">from</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) - <span class="fl">2</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/facet_by.html">facet_by</a></span>(<span class="st">"category"</span>) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb36"><pre class="downlit">
+<span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">2</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/facet_by.html">facet_by</a></span>(<span class="st">"category"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/get_query.html">get_query</a></span>()
-<span class="co">#&gt; [1] "op=search&amp;q=*:*&amp;rows=0&amp;facet=true&amp;native=true&amp;facet.field=category&amp;facet.limit=-1&amp;facet.sort=count&amp;facet.mincount=0&amp;facet.offset=0&amp;fq=pubdate%3A%5B2020-09-10T00%3A00%3A00Z%20TO%20%2A%5D"</span></pre></body></html></div>
+<span class="co">#&gt; [1] "op=search&amp;q=*:*&amp;rows=0&amp;facet=true&amp;native=true&amp;facet.field=category&amp;facet.limit=-1&amp;facet.sort=count&amp;facet.mincount=0&amp;facet.offset=0&amp;fq=pubdate%3A%5B2020-09-10T00%3A00%3A00Z%20TO%20%2A%5D"</span>
+</pre></div>
 <p>Here we see the facet query string that is constructed by this query specification.</p>
 <p>To run the query, we use <code><a href="../reference/run.html">run()</a></code> as we did with fetch queries. Here, we additionaly specify in <code><a href="../reference/facet_by.html">facet_by()</a></code> that we only want the top 10 categories.</p>
-<div class="sourceCode" id="cb37"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(<span class="kw">from</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) - <span class="fl">2</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/facet_by.html">facet_by</a></span>(<span class="st">"category"</span>, <span class="kw">limit</span> <span class="kw">=</span> <span class="fl">10</span>) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb37"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">2</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/facet_by.html">facet_by</a></span>(<span class="st">"category"</span>, limit = <span class="fl">10</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
-<span class="no">res</span>
+<span class="kw">res</span>
 <span class="co">#&gt; # A tibble: 10 x 2</span>
 <span class="co">#&gt;    category                            n</span>
 <span class="co">#&gt;    &lt;chr&gt;                           &lt;dbl&gt;</span>
@@ -552,12 +625,15 @@
 <span class="co">#&gt;  7 emro                            94203</span>
 <span class="co">#&gt;  8 usa                             91441</span>
 <span class="co">#&gt;  9 italy                           61976</span>
-<span class="co">#&gt; 10 implantrisks                    51553</span></pre></body></html></div>
+<span class="co">#&gt; 10 implantrisks                    51553</span>
+</pre></div>
 <p>Different from fetch queries, facet queries always return a data frame.</p>
 <p>To see what fields are avilable to facet on:</p>
-<div class="sourceCode" id="cb38"><html><body><pre class="r"><span class="fu"><a href="../reference/facetable_fields.html">facetable_fields</a></span>()
+<div class="sourceCode" id="cb38"><pre class="downlit">
+<span class="fu"><a href="../reference/facetable_fields.html">facetable_fields</a></span>()
 <span class="co">#&gt; [1] "language"      "category"      "country"       "source"       </span>
-<span class="co">#&gt; [5] "quotewho"      "quotecategory" "duplicate"</span></pre></body></html></div>
+<span class="co">#&gt; [5] "quotewho"      "quotecategory" "duplicate"</span>
+</pre></div>
 </div>
 <div id="faceting-by-dates" class="section level3">
 <h3 class="hasAnchor">
@@ -573,13 +649,14 @@
 <code>gap</code>: The bin size to facet over. This is specified using the <code><a href="../reference/range_gap.html">range_gap()</a></code> function as will be illustrated the examples below.</li>
 </ul>
 <p>To facet daily by publication date for all “CoronavirusInfection” articles over the past 20 days:</p>
-<div class="sourceCode" id="cb39"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"coronavirusinfection"</span>) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb39"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"coronavirusinfection"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/facet_date_range.html">facet_date_range</a></span>(
-    <span class="kw">start</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) - <span class="fl">20</span>,
-    <span class="kw">end</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()),
-    <span class="kw">gap</span> <span class="kw">=</span> <span class="fu"><a href="../reference/range_gap.html">range_gap</a></span>(<span class="fl">1</span>, <span class="st">"DAY"</span>)
-  ) <span class="kw">%&gt;%</span>
+    start = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">20</span>,
+    end = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()),
+    gap = <span class="fu"><a href="../reference/range_gap.html">range_gap</a></span>(<span class="fl">1</span>, <span class="st">"DAY"</span>)
+  ) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 <span class="co">#&gt; # A tibble: 20 x 2</span>
 <span class="co">#&gt;    pubdate                 n</span>
@@ -603,16 +680,18 @@
 <span class="co">#&gt; 17 2020-09-08 00:00:00 85925</span>
 <span class="co">#&gt; 18 2020-09-09 00:00:00 90019</span>
 <span class="co">#&gt; 19 2020-09-10 00:00:00 75486</span>
-<span class="co">#&gt; 20 2020-09-11 00:00:00 76962</span></pre></body></html></div>
+<span class="co">#&gt; 20 2020-09-11 00:00:00 76962</span>
+</pre></div>
 <p>The <code><a href="../reference/range_gap.html">range_gap()</a></code> function takes two parameters. The first is the number of time units the facet window gap should be and the second is the time unit, which is one of “DAY” (default), “MINUTE”, “HOUR”, “WEEK”, “MONTH”, or “YEAR”.</p>
 <p>Here we run the same facet but hourly:</p>
-<div class="sourceCode" id="cb40"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="no">con</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"coronavirusinfection"</span>) <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb40"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"coronavirusinfection"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/facet_date_range.html">facet_date_range</a></span>(
-    <span class="kw">start</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) - <span class="fl">20</span>,
-    <span class="kw">end</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()),
-    <span class="kw">gap</span> <span class="kw">=</span> <span class="fu"><a href="../reference/range_gap.html">range_gap</a></span>(<span class="fl">1</span>, <span class="st">"HOUR"</span>)
-  ) <span class="kw">%&gt;%</span>
+    start = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">20</span>,
+    end = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()),
+    gap = <span class="fu"><a href="../reference/range_gap.html">range_gap</a></span>(<span class="fl">1</span>, <span class="st">"HOUR"</span>)
+  ) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 <span class="co">#&gt; # A tibble: 480 x 2</span>
 <span class="co">#&gt;    pubdate                 n</span>
@@ -627,18 +706,20 @@
 <span class="co">#&gt;  8 2020-08-23 00:00:00  2075</span>
 <span class="co">#&gt;  9 2020-08-23 00:00:00  2915</span>
 <span class="co">#&gt; 10 2020-08-23 00:00:00  2491</span>
-<span class="co">#&gt; # … with 470 more rows</span></pre></body></html></div>
+<span class="co">#&gt; # … with 470 more rows</span>
+</pre></div>
 </div>
 </div>
 <div id="string-queries" class="section level2">
 <h2 class="hasAnchor">
 <a href="#string-queries" class="anchor"></a>String queries</h2>
 <p>There are many ways queries can be constructed with Solr/Finder. The functions for fetching and faceting provided above are meant to cover the vast majority of use cases, but their simplified API might not allow for some very special cases. If one is very familiar with Finder/Solr and wants to use this package to execute their own custom queries, there is a simple mechanism for doing this:</p>
-<div class="sourceCode" id="cb41"><html><body><pre class="r"><span class="co"># query_str() allows you to run a query that you have already constructed a query string for</span>
+<div class="sourceCode" id="cb41"><pre class="downlit">
+<span class="co"># query_str() allows you to run a query that you have already constructed a query string for</span>
 <span class="co"># default is to return a list</span>
-<span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_str.html">query_str</a></span>(<span class="no">con</span>, <span class="st">"op=search&amp;q=*:*&amp;rows=0"</span>) <span class="kw">%&gt;%</span>
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_str.html">query_str</a></span>(<span class="kw">con</span>, <span class="st">"op=search&amp;q=*:*&amp;rows=0"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
-<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">res</span>$<span class="no">rss</span>$<span class="no">channel</span>, <span class="fl">1</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="kw">res</span><span class="op">$</span><span class="kw">rss</span><span class="op">$</span><span class="kw">channel</span>, <span class="fl">1</span>)
 <span class="co">#&gt; List of 8</span>
 <span class="co">#&gt;  $ title   : list()</span>
 <span class="co">#&gt;  $ pubDate :List of 1</span>
@@ -650,13 +731,14 @@
 <span class="co">#&gt;  $ rows    :List of 1</span>
 
 <span class="co"># to return in xml format</span>
-<span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/query_str.html">query_str</a></span>(<span class="no">con</span>, <span class="st">"op=search&amp;q=*:*&amp;rows=0"</span>, <span class="kw">format</span> <span class="kw">=</span> <span class="st">"xml"</span>) <span class="kw">%&gt;%</span>
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_str.html">query_str</a></span>(<span class="kw">con</span>, <span class="st">"op=search&amp;q=*:*&amp;rows=0"</span>, format = <span class="st">"xml"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/run.html">run</a></span>()
 
-<span class="no">res</span>
+<span class="kw">res</span>
 <span class="co">#&gt; {xml_document}</span>
 <span class="co">#&gt; &lt;rss version="2.0" xmlns:emm="http://emm.jrc.it" xmlns:iso="http://www.iso.org/ 3166" xmlns:gphin="http://gphin.canada.ca"&gt;</span>
-<span class="co">#&gt; [1] &lt;channel&gt;\n  &lt;title/&gt;\n  &lt;pubDate&gt;Sat, 12 Sep 2020 22:01:54 UTC&lt;/pubDate&gt;\n  &lt; ...</span></pre></body></html></div>
+<span class="co">#&gt; [1] &lt;channel&gt;\n  &lt;title/&gt;\n  &lt;pubDate&gt;Sat, 12 Sep 2020 22:01:54 UTC&lt;/pubDate&gt;\n  &lt; ...</span>
+</pre></div>
 </div>
 </div>
 <div id="limitations" class="section level1">
@@ -682,7 +764,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

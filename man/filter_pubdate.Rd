@@ -8,6 +8,12 @@ filter_pubdate(query, from = NULL, to = NULL, on = NULL)
 }
 \arguments{
 \item{query}{a \code{\link[=query_fetch]{query_fetch()}} or \code{\link[=query_facet]{query_facet()}} object}
+
+\item{from}{start date}
+
+\item{to}{end date}
+
+\item{on}{exact date (if specified, from and to are ignored)}
 }
 \description{
 Filter pubdate

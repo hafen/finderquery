@@ -6,6 +6,13 @@
 \usage{
 sort_by(query, field, asc = TRUE)
 }
+\arguments{
+\item{query}{a \code{\link[=query_fetch]{query_fetch()}} object}
+
+\item{field}{the field name to sort by (see \code{\link[=queryable_fields]{queryable_fields()}})}
+
+\item{asc}{if TRUE, will sort ascending, if FALSE, descending}
+}
 \description{
 Specify field to sort on
 }

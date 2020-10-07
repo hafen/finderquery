@@ -7,3 +7,6 @@
 ^api$
 ^\.travis\.yml$
 ^\.github$
+^.dockerignore$
+^Dockerfile$
+^docker$

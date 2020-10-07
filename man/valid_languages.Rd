@@ -6,6 +6,9 @@
 \usage{
 valid_languages(con)
 }
+\arguments{
+\item{con}{A finder connection object from \code{\link[=finder_connect]{finder_connect()}}.}
+}
 \description{
 Get a vector of all unique "language" values
 }
