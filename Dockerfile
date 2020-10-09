@@ -1,6 +1,11 @@
 FROM r-base:4.0.2
 
-ENV REACT_APP_API_BASE=http://127.0.0.1:8000/api
+ENV REACT_APP_API_BASE=api
+ENV HTTP_PROXY=http://10.49.0.25:8080/
+ENV HTTPS_PROXY=http://10.49.0.25:8080/
+ENV NO_PROXY=localhost
+
+# CMD tail -f /dev/null
 
 # Install system dependencies and pre-compiled R packages
 RUN apt-get update \
@@ -36,5 +41,9 @@ RUN systemctl enable plumber-api
 
 WORKDIR /
 
-RUN systemctl start nginx
-RUN systemctl start plumber-api
+# Set up entrypoint
+COPY docker/run-app /usr/bin/run-app
+RUN chmod 755 /usr/bin/run-app
+
+# run
+CMD /usr/bin/run-app && tail -f /dev/null

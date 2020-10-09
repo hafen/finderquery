@@ -1,0 +1,4 @@
+#!/bin/sh
+
+systemctl start nginx
+systemctl start plumber-api
