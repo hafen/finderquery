@@ -125,7 +125,7 @@ function(
 #* @get /download_docs
 function(
   category, country, language, source, duplicate, pubdate, indexdate, text,
-  tonality, entityid, georssid, guid, fields, path
+  tonality, entityid, georssid, guid, fields, path, format
 ) {
   if (!dir.exists(path))
     dir.create(path, recursive = TRUE)
@@ -145,6 +145,10 @@ function(
       cat("test", file = file.path(path, sprintf("output%04d.xml", i)))
   } else {
     finderquery::run(qry)
+  }
+
+  if (format == "csv") {
+    browser()
   }
 
   ff <- list.files(path)

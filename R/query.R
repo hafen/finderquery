@@ -50,8 +50,15 @@ run_query_str <- function(query) {
 
   # we can't use xml_to_list since we don't know what kind of content
   # a string query will return (could be facet, fetch, etc.)
-  if (query$format == "list")
-    return(xml2::as_list(res))
+  if (query$format == "list") {
+    if (is.na(xml2::xml_text(xml2::xml_find_first(res, ".//numFound")))) {
+      # it's not a fetch query so just return a list
+      return(xml2::as_list(res))
+    } else {
+      # it's a fetch query
+      return(xml_to_list(res))
+    }
+  }
 
   return(res)
 }

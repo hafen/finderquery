@@ -7,6 +7,11 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Checkbox from '@material-ui/core/Checkbox';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
 import { format } from 'date-fns';
 import { useSnackbar } from 'notistack';
 import Multiselect from './inputs/Multiselect';
@@ -115,6 +120,9 @@ const useStyles = makeStyles((theme) => ({
   },
   selectAll: {
     color: 'darkgray'
+  },
+  formatLabel: {
+    textAlign: 'left'
   }
 }));
 
@@ -172,6 +180,7 @@ export default function Container() {
   const [stEntityid, setStEntityid] = useState('');          // text input
   const [stGeorssid, setStGeorssid] = useState('');          // text input
   const [stGuid, setStGuid] = useState('');                  // text input
+  const [stFormat, setStFormat] = useState("xml");                     // checkbox
 
   const dbText = useDebounce(stText, 500);
   const dbEntityid = useDebounce(stEntityid, 500);
@@ -231,7 +240,7 @@ export default function Container() {
     const fmt = (x) => x === null ? null : format(x, 'yyyy-MM-dd');
     const dd = (x, y) => `["${fmt(x)}","${fmt(y)}"]`;
   
-    const url = `${apiBase}/download_docs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}&fields=${JSON.stringify(stFields)}&path=/tmp/__finder_downloads__/${queryName}`;
+    const url = `${apiBase}/download_docs?category=${jj(stCategory)}&country=${jj(stCountry)}&language=${jj(stLanguage)}&source=${jj(stSource)}&duplicate=${jj(stDuplicate)}&pubdate=${dd(stPubdate1,stPubdate2)}&indexdate=${dd(stIndexdate1,stIndexdate2)}&text=${dbText}&tonality=${jj(stTonality)}&entityid=${dbEntityid}&georssid=${dbGeorssid}&guid=${dbGuid}&fields=${JSON.stringify(stFields)}&path=/tmp/__finder_downloads__/${queryName}&format=${stFormat}`;
 
     setDocsDownloading(true)
     fetch(url)
@@ -352,6 +361,15 @@ export default function Container() {
           </div>
           <div className={classes.inputRow}>
             <Fields update={updateFields} selectedFields={stFields} />
+          </div>
+          <div className={classes.inputFieldsRow}>
+            <FormControl component="fieldset">
+              <FormLabel component="legend" className={classes.formatLabel}>Output format</FormLabel>
+              <RadioGroup aria-label="format" name="format1" value={stFormat} onChange={(event) => { setStFormat(event.target.value)}} row>
+                <FormControlLabel value="xml" control={<Radio color="primary" />} label="xml" />
+                <FormControlLabel value="csv" control={<Radio color="primary" />} label="csv" />
+              </RadioGroup>
+            </FormControl>
           </div>
         </div>
         <div>

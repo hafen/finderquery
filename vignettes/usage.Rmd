@@ -480,6 +480,43 @@ Note that we can convert this to our list format with the following:
 res <- xml_to_list(res)
 ```
 
+### Converting to data frame
+
+There is also a function, `list_to_df()`, to convert fetch results to a data frame. Note that in general, a lot of information can be lost when doing this, such as attributes or entries that have more than one element.
+
+Columns "title" and "description" often have two elements with the second being the English translation. Because of this, columns "title", "title_en", "description", and "description_en" are created to preserve this. Columns "entity", "category", "fullgeo" usually have more than one entry for each document and as such are added to the data frame as "list columns".
+
+```r
+res <- query_fetch(con) %>%
+  run()
+
+res_df <- list_to_df(res)
+
+res_df                                                                          
+#># A tibble: 10 x 17
+#>   title title_en link  description description_en contentType pubDate source
+#>   <chr> <chr>    <chr> <chr>       <chr>          <chr>       <chr>   <chr> 
+#> 1 Dipl… "Diplom… http… "Dans sa r… In the headin… text/html   2020-0… Emmne…
+#> 2 Séné… "Senega… http… "L’avocat … The senegales… text/html   2020-0… Emmne…
+#> 3 La q… "Quaran… http… "Pour évit… To avoid this… text/html   2020-0… Emmne…
+#> 4 Son … "His So… http… "Le consei… The national … text/html   2020-0… Emmne…
+#> 5 Covi… "Covid … http… ".\n\n#Aut… . # other cou… text/html   2020-0… Emmne…
+#> 6 Pers… "Africa… http… "#Autres p… # other count… text/html   2020-0… Emmne…
+#> 7 Coro… "Corona… http… "Le corona… The Coronavir… text/html   2020-0… Emmne…
+#> 8 اليو… "اليونا… http… "."         .              text/html   2020-0… cairo…
+#> 9 ترام… "ترامب … http… "."         .              text/html   2020-0… cairo…
+#>10 Colo… "Colomb… http… "MADRID, 9… Madrid, 9 Sep… text/html   2020-0… europ…
+#># … with 9 more variables: language <chr>, guid <chr>, category <list>,
+#>#   favicon <chr>, entity <list>, georss <chr>, fullgeo <list>, tonality <chr>,
+#>#   text <chr>
+```
+
+A function `write_docs_csv()` also exists that will flatten the list column variables into strings and write the result to a csv file:
+
+```r
+write_docs_csv(res_df, path = "/tmp/tmp.csv")
+```
+
 ### Fetching to disk
 
 In the previous fetch examples, the return object `docs` has been a list format of the document content of the query.
