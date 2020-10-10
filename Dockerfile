@@ -23,6 +23,9 @@ COPY R /home/docker/R
 COPY man /home/docker/man
 COPY DESCRIPTION /home/docker/DESCRIPTION
 COPY NAMESPACE /home/docker/NAMESPACE
+COPY .Rbuildignore /home/docker/.Rbuildignore
+
+RUN /usr/bin/Rscript -e "devtools::install('/home/docker')"
 
 # Set up and run web server
 COPY docker/nginx.conf /etc/nginx/sites-enabled/default

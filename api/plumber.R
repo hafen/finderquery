@@ -1,4 +1,7 @@
-devtools::load_all("..")
+# devtools::load_all("..")
+# devtools::install_github("WorldHealthOrganization/finderquery")
+library(finderquery)
+
 Sys.unsetenv("NO_PROXY")
 Sys.unsetenv("HTTPS_PROXY")
 Sys.unsetenv("HTTP_PROXY")
