@@ -236,7 +236,7 @@ res <- query_fetch(con) %>%
   run()
 ```
 
-We can use any valid Solr specification of term combinations See [here](https://lucene.apache.org/solr/guide/6_6/the-standard-query-parser.html#TheStandardQueryParser-SpecifyingTermsfortheStandardQueryParser) for more information. For example, for documents that contain the category "CoronavirusInfection" AND the category "PAHO":
+We can use any valid Solr specification of term combinations. For example, for documents that contain the category "CoronavirusInfection" AND the category "PAHO":
 
 ```r
 res <- query_fetch(con) %>%
@@ -245,7 +245,7 @@ res <- query_fetch(con) %>%
   run()
 ```
 
-##### filter_country()
+##### `filter_country()`
 
 To filter on documents for which the source comes from Germany or France:
 
@@ -264,7 +264,7 @@ head(valid_countries(con))
 #> [1] "ad" "ae" "af" "ag" "ai" "al"
 ```
 
-##### filter_language()
+##### `filter_language()`
 
 We can use `filter_language()` to filter on languages in the documents:
 
@@ -281,7 +281,7 @@ head(valid_languages(con))
 #> [1] "af" "am" "ar" "az" "be" "bg"
 ```
 
-##### filter_source()
+##### `filter_source()`
 
 To filter on the document source, source we can use `filter_source()`.
 
@@ -309,7 +309,7 @@ head(valid_sources(con))
 #> [5] "112achterhoek"    "112brabantnieuws"
 ```
 
-##### filter_duplicate()
+##### `filter_duplicate()`
 
 We can filter on whether the document is flagged as a duplicate or not with `filter_duplicate()`:
 
@@ -381,7 +381,7 @@ Note here that we are stringing multiple filter commands together to get to what
 
 A few other filter functions are available.
 
-##### filter_tonality()
+##### `filter_tonality()`
 
 `filter_tonality()` is a special range filter that takes numeric values. In addition to having `from` and `to` parameters that behave in the same way as the date range filters, it also has a `value` parameter which can be used to retrive documents with a specific tonality value.
 
