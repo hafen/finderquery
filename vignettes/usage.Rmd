@@ -219,6 +219,32 @@ head(valid_categories(con))
 #> [5] "acrolein"        "acrylamidfurans"
 ```
 
+If you specify a vector of terms, all documents will be selected that match any of the provided values (OR logic). For example:
+
+```r
+res <- query_fetch(con) %>%
+  filter_category(c("CoronavirusInfection", "PAHO")) %>%
+  run()
+```
+
+If you would like to exclude a term you can prepend it with "-" or "!". For example, if we want to filter to documents that contain the category "CoronavirusInfection" but NOT the category "PAHO":
+
+```r
+res <- query_fetch(con) %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 1) %>%
+  filter_category(c("CoronavirusInfection", "-PAHO")) %>%
+  run()
+```
+
+We can use any valid Solr specification of term combinations See [here](https://lucene.apache.org/solr/guide/6_6/the-standard-query-parser.html#TheStandardQueryParser-SpecifyingTermsfortheStandardQueryParser) for more information. For example, for documents that contain the category "CoronavirusInfection" AND the category "PAHO":
+
+```r
+res <- query_fetch(con) %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 1) %>%
+  filter_category("CoronavirusInfection AND PAHO") %>%
+  run()
+```
+
 ##### filter_country()
 
 To filter on documents for which the source comes from Germany or France:
@@ -630,6 +656,30 @@ res
 ```
 
 Different from fetch queries, facet queries always return a data frame.
+
+It is possible to facet on up to two fields.
+
+```r
+res <- query_facet(con) %>%
+  filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
+  facet_by(c("category", "language"), limit = 100) %>%
+  run()
+res
+#> # A tibble: 4,403 x 3
+#>    category language     n
+#>    <chr>    <chr>    <dbl>
+#>  1 euro     en       55307
+#>  2 euro     it       47138
+#>  3 euro     es       39303
+#>  4 euro     el       35447
+#>  5 euro     ru       33457
+#>  6 euro     de       32450
+#>  7 euro     fr       21507
+#>  8 euro     tr       14694
+#>  9 euro     pt       13721
+#> 10 euro     ar       13421
+#> # … with 4,393 more rows
+```
 
 To see what fields are avilable to facet on:
 

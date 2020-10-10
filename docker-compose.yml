@@ -1,0 +1,18 @@
+version: '3.3'
+services:
+  finderquery:
+    build:
+      context: .
+      args:
+        NO_PROXY: localhost
+        HTTPS_PROXY: http://10.49.0.25:8080/
+        HTTP_PROXY: http://10.49.0.25:8080/
+        http_proxy: http://10.49.0.30:8080
+        https_proxy: http://10.49.0.25:8080/
+        no_proxy: 10.49.4.18,10.49.4.25,10.49.4.19
+    image: finderquery
+    container_name: finderquery
+    ports:
+      - '8000:8000'
+    container_name: finderquery
+    image: finderquery

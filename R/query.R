@@ -70,6 +70,11 @@ run_query_fetch <- function(query) {
     dest <- file.path(query$path, "output.xml")
   }
 
+  # by default it filters to last 30 days
+  # so if no pubdate filter is specified, add really old lower bound
+  if (!any(grepl("^pubdate", unlist(query$filters))))
+    query <- query %>% filter_pubdate(from = as.Date("1990-01-01"))
+
   qry <- build_query_fetch(query)
 
   aa <- curl::curl_fetch_memory(build_url(query$con$con, qry))
@@ -162,6 +167,11 @@ run_query_facet <- function(query) {
   if (is.null(query$facet))
     stop("Must specify faceting.")
 
+  # by default it filters to last 30 days
+  # so if no pubdate filter is specified, add really old lower bound
+  if (!any(grepl("^pubdate", unlist(query$filters))))
+    query <- query %>% filter_pubdate(from = as.Date("1990-01-01"))
+
   qry <- build_query_facet(query)
   aa <- curl::curl_fetch_memory(build_url(query$con$con, qry))
   if (aa$status_code != 200)
@@ -182,9 +192,7 @@ run_query_facet <- function(query) {
       n = as.numeric(unlist(a))
     )
     names(res)[1] <- fld
-  }
-
-  if (query$facet$type == "date_range") {
+  } else if (query$facet$type == "date_range") {
     fld <- query$facet$field
     a <- res %>%
       xml2::xml_find_all(paste0("//lst[@name='", fld, "']")) %>%
@@ -198,6 +206,38 @@ run_query_facet <- function(query) {
     )
     res$tmp <- as.POSIXct(res$tmp)
     names(res)[1] <- fld
+  } else if (query$facet$type == "pivot") {
+    nm <- query$facet$pivot
+    tmp <- res %>%
+      xml2::xml_find_all(paste0("//arr[@name='", nm, "']")) %>%
+      xml2::xml_children() %>%
+      xml2::as_list()
+
+    res <- lapply(tmp, function(el) {
+      fld <- el[[1]][[1]]
+      fld_val <- el[[2]][[1]]
+      a1 <- unname(unlist(lapply(el[[4]], function(x) {
+        x[[2]][[1]]
+      })))
+      a2 <- as.numeric(unname(unlist(lapply(el[[4]], function(x) {
+        x[[3]][[1]]
+      }))))
+      tibble::tibble(
+        !!fld := fld_val,
+        !!el[[4]][[1]][[1]][[1]] := a1,
+        n = a2
+      )
+      # # this is much slower
+      # tb <- lapply(el[[4]], function(x) {
+      #   tibble::tibble(
+      #     !!fld := fld_val,
+      #     !!x[[1]][[1]] := x[[2]][[1]],
+      #     n = as.numeric(x[[3]][[1]])
+      #   )
+      # }) %>%
+      # dplyr::bind_rows()
+    }) %>%
+    dplyr::bind_rows()
   }
 
   res
@@ -242,7 +282,7 @@ build_query_fetch <- function(query) {
 build_query_facet <- function(query) {
   qstr <- ifelse(is.null(query$filter_text), "*:*", query$filter_text)
 
-  if (query$facet$type == "field") {
+  if (query$facet$type %in% c("field", "pivot")) {
     pars <- query$facet
     pars$type <- NULL
     pars <- paste0(paste0("facet.", names(pars)), "=", unlist(pars))
@@ -257,7 +297,6 @@ build_query_facet <- function(query) {
     qry <- paste0("op=search&q=", qstr, "&rows=0&facet=true&native=true&",
       "facet.range=", field, "&", paste(pars, collapse = "&"))
   }
-
   filter_str <- build_filter_string(query)
   if (filter_str != "")
     qry <- paste0(qry, "&", filter_str)

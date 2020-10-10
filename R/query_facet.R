@@ -11,7 +11,8 @@ query_facet <- function(con) {
 
 #' Specify a field to facet by
 #' @param query a [query_facet()] object
-#' @param field field name (see [facetable_fields()] for all possibilities)
+#' @param field field name or vector of two field names
+#'   (see [facetable_fields()] for all possibilities)
 #' @param sort Controls how faceted results are sorted.
 # sort: Sort the constraints by count (highest count first).
 # index: Return the constraints sorted in their index order (lexicographic by indexed term). For terms in the ASCII range, this will be alphabetically sorted.
@@ -25,21 +26,29 @@ facet_by <- function(query,
   check_class(query, c("query_facet"), "facet_by")
   sort <- match.arg(sort)
 
-  if (!field %in% facetable_fields())
-    stop("'facet_by' field name is not one of the values found in ",
+  if (!all(field %in% facetable_fields()))
+    stop("'facet_by()' field name is not one of the values found in ",
       "facetable_fields().")
 
   if (!is.null(query$facet))
     message("Replacing previously-specified facet specification")
 
+  if (length(field) > 2)
+    stop("'facet_by()' can only have one or two fields specified.")
+
   query$facet <- list(
-    type = "field",
+    type = ifelse(length(field) == 1, "field", "pivot"),
     field = field,
     limit = limit,
     sort = sort,
     mincount = mincount,
     offset = offset
   )
+
+  if (query$facet$type == "pivot") {
+    query$facet$pivot <- paste(query$facet$field, collapse = ",")
+    query$facet$field <- NULL
+  }
 
   query
 }
