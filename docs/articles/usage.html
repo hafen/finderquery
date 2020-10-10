@@ -521,6 +521,40 @@
 <span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/xml_to_list.html">xml_to_list</a></span>(<span class="kw">res</span>)
 </pre></div>
 </div>
+<div id="converting-to-data-frame" class="section level3">
+<h3 class="hasAnchor">
+<a href="#converting-to-data-frame" class="anchor"></a>Converting to data frame</h3>
+<p>There is also a function, <code><a href="../reference/list_to_df.html">list_to_df()</a></code>, to convert fetch results to a data frame. Note that in general, a lot of information can be lost when doing this, such as attributes or entries that have more than one element.</p>
+<p>Columns “title” and “description” often have two elements with the second being the English translation. Because of this, columns “title”, “title_en”, “description”, and “description_en” are created to preserve this. Columns “entity”, “category”, “fullgeo” usually have more than one entry for each document and as such are added to the data frame as “list columns”.</p>
+<div class="sourceCode" id="cb32"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/run.html">run</a></span>()
+
+<span class="kw">res_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_to_df.html">list_to_df</a></span>(<span class="kw">res</span>)
+
+<span class="kw">res_df</span>                                                                          
+<span class="co">#&gt;# A tibble: 10 x 17</span>
+<span class="co">#&gt;   title title_en link  description description_en contentType pubDate source</span>
+<span class="co">#&gt;   &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;          &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt; </span>
+<span class="co">#&gt; 1 Dipl… "Diplom… http… "Dans sa r… In the headin… text/html   2020-0… Emmne…</span>
+<span class="co">#&gt; 2 Séné… "Senega… http… "L’avocat … The senegales… text/html   2020-0… Emmne…</span>
+<span class="co">#&gt; 3 La q… "Quaran… http… "Pour évit… To avoid this… text/html   2020-0… Emmne…</span>
+<span class="co">#&gt; 4 Son … "His So… http… "Le consei… The national … text/html   2020-0… Emmne…</span>
+<span class="co">#&gt; 5 Covi… "Covid … http… ".\n\n#Aut… . # other cou… text/html   2020-0… Emmne…</span>
+<span class="co">#&gt; 6 Pers… "Africa… http… "#Autres p… # other count… text/html   2020-0… Emmne…</span>
+<span class="co">#&gt; 7 Coro… "Corona… http… "Le corona… The Coronavir… text/html   2020-0… Emmne…</span>
+<span class="co">#&gt; 8 اليو… "اليونا… http… "."         .              text/html   2020-0… cairo…</span>
+<span class="co">#&gt; 9 ترام… "ترامب … http… "."         .              text/html   2020-0… cairo…</span>
+<span class="co">#&gt;10 Colo… "Colomb… http… "MADRID, 9… Madrid, 9 Sep… text/html   2020-0… europ…</span>
+<span class="co">#&gt;# … with 9 more variables: language &lt;chr&gt;, guid &lt;chr&gt;, category &lt;list&gt;,</span>
+<span class="co">#&gt;#   favicon &lt;chr&gt;, entity &lt;list&gt;, georss &lt;chr&gt;, fullgeo &lt;list&gt;, tonality &lt;chr&gt;,</span>
+<span class="co">#&gt;#   text &lt;chr&gt;</span>
+</pre></div>
+<p>A function <code><a href="../reference/write_docs_csv.html">write_docs_csv()</a></code> also exists that will flatten the list column variables into strings and write the result to a csv file:</p>
+<div class="sourceCode" id="cb33"><pre class="downlit">
+<span class="fu"><a href="../reference/write_docs_csv.html">write_docs_csv</a></span>(<span class="kw">res_df</span>, path = <span class="st">"/tmp/tmp.csv"</span>)
+</pre></div>
+</div>
 <div id="fetching-to-disk" class="section level3">
 <h3 class="hasAnchor">
 <a href="#fetching-to-disk" class="anchor"></a>Fetching to disk</h3>
@@ -528,7 +562,7 @@
 <p>In a many cases we may wish to do a bulk download of many articles. If we specify a <code>path</code> argument to <code><a href="../reference/query_fetch.html">query_fetch()</a></code>, the results will be written in batches to the specified directory.</p>
 <p>When running a potentially large query, it is good to first run it with <code>max = 0</code> so that no documents are returned. Queries that may involve a large number of documents but do not return any documents can run fairly quickly, and we can examine the results to find out how many documents match the query parameters and whether it would be a good idea to try to download them.</p>
 <p>For example, with a query similar to what we specified earlier, suppose we want to get all documents in the last 5 days that are in German and have the “CoronavirusInfection” category.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit">
+<div class="sourceCode" id="cb34"><pre class="downlit">
 <span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>, max = <span class="fl">0</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="op">%&gt;%</span>
@@ -541,7 +575,7 @@
 </pre></div>
 <p>We see that there are about 14k documents, which is not a lot to try to download.</p>
 <p>Now, to get all of these documents with pagination, we can set <code>max = -1</code> and provide a directory to write the output to:</p>
-<div class="sourceCode" id="cb33"><pre class="downlit">
+<div class="sourceCode" id="cb35"><pre class="downlit">
 <span class="kw">tf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempfile</a></span>()
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span>(<span class="kw">tf</span>)
 
@@ -560,7 +594,7 @@
 </pre></div>
 <p>The ~14k documents were downloaded over two files located in the output directory we specified.</p>
 <p>Note that since 14k documents isn’t that large, we may want to read them all into memory in R in the more convenient list format:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit">
+<div class="sourceCode" id="cb36"><pre class="downlit">
 <span class="kw">xml</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span>(<span class="kw">tf</span>, full.names = <span class="fl">TRUE</span>), <span class="kw">xml2</span>::<span class="kw"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_xml</a></span>)
 <span class="kw">docs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="kw">xml</span>,<span class="kw">xml_to_list</span>), recursive = <span class="fl">FALSE</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="kw">docs</span>)
@@ -589,7 +623,7 @@
 <h3 class="hasAnchor">
 <a href="#initiating-a-guery" class="anchor"></a>Initiating a guery</h3>
 <p>To initiate a facet query, we use the function <code><a href="../reference/query_facet.html">query_facet()</a></code>, and pass it our connection object.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit">
+<div class="sourceCode" id="cb37"><pre class="downlit">
 <span class="kw">query</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>)
 </pre></div>
 <p>Similarly to fetch queries, we can call <code><a href="../reference/get_query.html">get_query()</a></code> or <code><a href="../reference/run.html">run()</a></code> to print the query string or run the query.</p>
@@ -598,7 +632,7 @@
 <h3 class="hasAnchor">
 <a href="#faceting-by-fields" class="anchor"></a>Faceting by fields</h3>
 <p>Suppose we want to tabulate the frequency of all of the categories in the documents over the last two days. We can do this by adding <code><a href="../reference/facet_by.html">facet_by()</a></code> to our query, specifying the field name “category”.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit">
+<div class="sourceCode" id="cb38"><pre class="downlit">
 <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">2</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/facet_by.html">facet_by</a></span>(<span class="st">"category"</span>) <span class="op">%&gt;%</span>
@@ -607,7 +641,7 @@
 </pre></div>
 <p>Here we see the facet query string that is constructed by this query specification.</p>
 <p>To run the query, we use <code><a href="../reference/run.html">run()</a></code> as we did with fetch queries. Here, we additionaly specify in <code><a href="../reference/facet_by.html">facet_by()</a></code> that we only want the top 10 categories.</p>
-<div class="sourceCode" id="cb37"><pre class="downlit">
+<div class="sourceCode" id="cb39"><pre class="downlit">
 <span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">2</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/facet_by.html">facet_by</a></span>(<span class="st">"category"</span>, limit = <span class="fl">10</span>) <span class="op">%&gt;%</span>
@@ -629,7 +663,7 @@
 </pre></div>
 <p>Different from fetch queries, facet queries always return a data frame.</p>
 <p>To see what fields are avilable to facet on:</p>
-<div class="sourceCode" id="cb38"><pre class="downlit">
+<div class="sourceCode" id="cb40"><pre class="downlit">
 <span class="fu"><a href="../reference/facetable_fields.html">facetable_fields</a></span>()
 <span class="co">#&gt; [1] "language"      "category"      "country"       "source"       </span>
 <span class="co">#&gt; [5] "quotewho"      "quotecategory" "duplicate"</span>
@@ -649,7 +683,7 @@
 <code>gap</code>: The bin size to facet over. This is specified using the <code><a href="../reference/range_gap.html">range_gap()</a></code> function as will be illustrated the examples below.</li>
 </ul>
 <p>To facet daily by publication date for all “CoronavirusInfection” articles over the past 20 days:</p>
-<div class="sourceCode" id="cb39"><pre class="downlit">
+<div class="sourceCode" id="cb41"><pre class="downlit">
 <span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"coronavirusinfection"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/facet_date_range.html">facet_date_range</a></span>(
@@ -684,7 +718,7 @@
 </pre></div>
 <p>The <code><a href="../reference/range_gap.html">range_gap()</a></code> function takes two parameters. The first is the number of time units the facet window gap should be and the second is the time unit, which is one of “DAY” (default), “MINUTE”, “HOUR”, “WEEK”, “MONTH”, or “YEAR”.</p>
 <p>Here we run the same facet but hourly:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit">
+<div class="sourceCode" id="cb42"><pre class="downlit">
 <span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/filter_category.html">filter_category</a></span>(<span class="st">"coronavirusinfection"</span>) <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/facet_date_range.html">facet_date_range</a></span>(
@@ -714,7 +748,7 @@
 <h2 class="hasAnchor">
 <a href="#string-queries" class="anchor"></a>String queries</h2>
 <p>There are many ways queries can be constructed with Solr/Finder. The functions for fetching and faceting provided above are meant to cover the vast majority of use cases, but their simplified API might not allow for some very special cases. If one is very familiar with Finder/Solr and wants to use this package to execute their own custom queries, there is a simple mechanism for doing this:</p>
-<div class="sourceCode" id="cb41"><pre class="downlit">
+<div class="sourceCode" id="cb43"><pre class="downlit">
 <span class="co"># query_str() allows you to run a query that you have already constructed a query string for</span>
 <span class="co"># default is to return a list</span>
 <span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_str.html">query_str</a></span>(<span class="kw">con</span>, <span class="st">"op=search&amp;q=*:*&amp;rows=0"</span>) <span class="op">%&gt;%</span>

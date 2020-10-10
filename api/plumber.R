@@ -155,7 +155,7 @@ function(
       tmp2 <- xml_to_list(tmp)
       tmpdf <- list_to_df(tmp2)
       f2 <- gsub("xml$", "csv", f)
-      write_docs_csv(tmpdf, path = f2)
+      write_docs_csv(tmpdf, file = f2)
       unlink(f)
     }
   }

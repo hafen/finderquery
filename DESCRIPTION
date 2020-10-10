@@ -1,5 +1,5 @@
 Package: finderquery
-Title: Utilities for building EIOS Finder queries
+Title: Utilities for Building EIOS Finder Queries
 Version: 0.1.0
 Authors@R: 
     person(given = "Ryan",
@@ -17,7 +17,9 @@ Imports:
     curl,
     jsonlite,
     xml2,
-    tibble
+    tibble,
+    dplyr,
+    readr
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,

@@ -9,8 +9,9 @@ write_docs_csv(x, collapse = ";", ...)
 \arguments{
 \item{x}{an object of class "xml_document" or "finder_docs" obtained from \code{\link[=query_fetch]{query_fetch()}}.}
 
-\item{collapse}{The separator character to use to collapse list column fields.
-\ldots Parameters sent to \code{\link[readr:write_delim]{readr::write_csv()}}.}
+\item{collapse}{The separator character to use to collapse list column fields.}
+
+\item{\ldots}{Parameters sent to \code{\link[readr:write_delim]{readr::write_csv()}}.}
 }
 \description{
 Write xml documents to a csv file
