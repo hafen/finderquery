@@ -1,11 +1,7 @@
 FROM r-base:4.0.2
 
 ENV REACT_APP_API_BASE=api
-ENV HTTP_PROXY=http://10.49.0.25:8080/
-ENV HTTPS_PROXY=http://10.49.0.25:8080/
-ENV NO_PROXY=localhost
-
-# CMD tail -f /dev/null
+ENV FINDER_HOST=10.49.4.6
 
 # Install system dependencies and pre-compiled R packages
 RUN apt-get update \
@@ -23,6 +19,10 @@ RUN apt update -y && apt install -y yarn
 # Copy files
 COPY api /home/docker/api
 COPY app /home/docker/app
+COPY R /home/docker/R
+COPY man /home/docker/man
+COPY DESCRIPTION /home/docker/DESCRIPTION
+COPY NAMESPACE /home/docker/NAMESPACE
 
 # Set up and run web server
 COPY docker/nginx.conf /etc/nginx/sites-enabled/default

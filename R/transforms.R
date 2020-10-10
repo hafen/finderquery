@@ -83,21 +83,35 @@ list_to_df <- function(x) {
     stop("list_to_df() expects an object returned from query_fetch()",
       call. = FALSE)
 
-  res <- dplyr::bind_rows(lapply(x, function(el) {
+  res <- lapply(x, function(el) {
     tmp <- list()
-    for (nm in names(el)) {
+    for (nm in setdiff(names(el), "enclosure")) {
+      # message(nm)
       a <- el[[nm]]
       if (nm %in% c("title", "description")) {
-        tmp[[nm]] <- a[[1]]
-        tmp[[paste0(nm, "_en")]] <- a[[min(2, length(a))]]
+        nm2 <- paste0(nm, "_en")
+        if (length(a) == 0) {
+          tmp[[nm]] <- as.character(NA)
+          tmp[[nm2]] <- as.character(NA)
+        } else {
+          tmp[[nm]] <- a[[1]]
+          tmp[[nm2]] <- a[[min(2, length(a))]]
+        }
       } else if (nm %in% list_cols) {
         tmp[[nm]] <- list(unlist(a))
       } else {
-        tmp[[nm]] <- a[[1]]
+        if (length(a) == 0) {
+          tmp[[nm]] <- as.character(NA)
+        } else {
+          if (length(a[[1]] == 0))
+          tmp[[nm]] <- a[[1]]
+        }
       }
     }
     tibble::as_tibble(tmp)
-  }))
+  })
+
+  res <- dplyr::bind_rows(res)
 
   class(res) <- c(class(res), "finder_docs")
 

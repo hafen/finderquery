@@ -148,7 +148,16 @@ function(
   }
 
   if (format == "csv") {
-    browser()
+    ff <- list.files(path, full.names = TRUE, pattern = "xml$")
+
+    for (f in ff) {
+      tmp <- xml2::read_xml(f)
+      tmp2 <- xml_to_list(tmp)
+      tmpdf <- list_to_df(tmp2)
+      f2 <- gsub("xml$", "csv", f)
+      write_docs_csv(tmpdf, path = f2)
+      unlink(f)
+    }
   }
 
   ff <- list.files(path)
