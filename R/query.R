@@ -1,12 +1,18 @@
 #' Execute a query
 #'
-#' @param query a [query_fetch()], [query_facet()] or [query_str()] object
+#' @param query a [fq_query_fetch()], [fq_query_facet()] or [fq_query_str()] object
 #' @export
-run <- function(query) {
+fq_run <- function(query) {
   check_class(query, c("query_facet", "query_fetch", "query_str"), "run")
 
   if (inherits(query, "query_str")) {
-    run_query_str(query)
+    if (query$type == "unknown") {
+      run_query_str(query)
+    } else if (query$type == "fetch") {
+      run_query_fetch(query)
+    } else {
+      run_query_facet(query)
+    }
   } else if (inherits(query, "query_fetch")) {
     run_query_fetch(query)
   } else if (inherits(query, "query_facet")) {
@@ -15,9 +21,9 @@ run <- function(query) {
 }
 
 #' Get the query string for a query
-#' @param query a [query_fetch()], [query_facet()], or [query_str()] object
+#' @param query a [fq_query_fetch()], [fq_query_facet()], or [fq_query_str()] object
 #' @export
-get_query <- function(query) {
+fq_get_query <- function(query) {
   check_class(query, c("query_fetch", "query_facet", "query_str"), "get_query")
 
   if (inherits(query, "query_str")) {
@@ -56,7 +62,7 @@ run_query_str <- function(query) {
       return(xml2::as_list(res))
     } else {
       # it's a fetch query
-      return(xml_to_list(res))
+      return(fq_xml_to_list(res))
     }
   }
 
@@ -70,10 +76,12 @@ run_query_fetch <- function(query) {
     dest <- file.path(query$path, "output.xml")
   }
 
+  if (inherits())
+
   # by default it filters to last 30 days
   # so if no pubdate filter is specified, add really old lower bound
   if (!any(grepl("^pubdate", unlist(query$filters))))
-    query <- query %>% filter_pubdate(from = as.Date("1990-01-01"))
+    query <- query %>% fq_filter_pubdate(from = as.Date("1990-01-01"))
 
   qry <- build_query_fetch(query)
 
@@ -96,7 +104,7 @@ run_query_fetch <- function(query) {
     }
 
     if (query$format == "list")
-      return(xml_to_list(res))
+      return(fq_xml_to_list(res))
 
     return(res)
   }
@@ -153,7 +161,7 @@ run_query_fetch <- function(query) {
     ff <- list.files(query$path, full.names = TRUE)
     tmp <- lapply(ff, function(f) {
       res <- xml2::read_xml(f, options = c("NOBLANKS", "HUGE"))
-      xml_to_list(res)
+      fq_xml_to_list(res)
     })
     return(unlist(tmp, recursive = FALSE))
   }
@@ -170,7 +178,7 @@ run_query_facet <- function(query) {
   # by default it filters to last 30 days
   # so if no pubdate filter is specified, add really old lower bound
   if (!any(grepl("^pubdate", unlist(query$filters))))
-    query <- query %>% filter_pubdate(from = as.Date("1990-01-01"))
+    query <- query %>% fq_filter_pubdate(from = as.Date("1990-01-01"))
 
   qry <- build_query_facet(query)
   aa <- curl::curl_fetch_memory(build_url(query$con$con, qry))
@@ -309,7 +317,7 @@ remove_fields <- function(x, query) {
   if (is.null(query$select))
     return(x)
 
-  exclude <- setdiff(selectable_fields(), query$select)
+  exclude <- setdiff(fq_selectable_fields(), query$select)
   for (val in exclude) {
     nodes <- xml2::xml_find_all(x, paste0("//", val))
     xml2::xml_remove(nodes, free = TRUE)

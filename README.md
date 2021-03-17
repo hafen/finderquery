@@ -7,7 +7,7 @@
 
 The finderquery package provides utilities for building Finder queries in a simple and intuitive way. It also provides an API that uses these utilities as well as code for a web application that provides an interface for building a query and downloading documents.
 
-Note that this package is not of general use to the public. It is built to work against the Finder system used by EIOS. It is only made public to make it easier to share with EIOS, as there is nothing proprietary stored in this repository.
+Note that this package is not of general use to the public. It is built to work against the Finder system. It is only made public to make it easier to share, as there is nothing proprietary stored in this repository.
 
 ## Installation
 
@@ -26,30 +26,30 @@ See the full "usage" documentation for many more examples as well as details on 
 library(finderquery)
 
 # specify Finder location
-con <- finder_connect("10.49.4.6")
+con <- finder_connect(Sys.getenv("FINDER_IP"))
 
 # query all documents in German that have category "CoronavirusInfection" 
 # that were published in the last two days, sorted by publication date
-res <- query_fetch(con) %>%
-  filter_language("de") %>%
-  filter_category("CoronavirusInfection") %>%
-  filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
-  run()
+res <- fq_query_fetch(con) %>%
+  fq_filter_language("de") %>%
+  fq_filter_category("CoronavirusInfection") %>%
+  fq_filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
+  fq_run()
 
 # count documents by top 10 categories over the last 2 days
-res <- query_facet(con) %>%
-  filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
-  facet_by("category", limit = 10) %>%
-  run()
+res <- fq_query_facet(con) %>%
+  fq_filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
+  fq_facet_by("category", limit = 10) %>%
+  fq_run()
 
 # count documents daily for all "CoronavirusInfection" articles over
 # the last 20 days, hourly
-res <- query_facet(con) %>%
-  filter_category("coronavirusinfection") %>%
-  facet_date_range(
+res <- fq_query_facet(con) %>%
+  fq_filter_category("coronavirusinfection") %>%
+  fq_facet_date_range(
     start = as.Date(Sys.time()) - 20,
     end = as.Date(Sys.time()),
-    gap = range_gap(1, "HOUR")
+    gap = fq_range_gap(1, "HOUR")
   ) %>%
-  run()
+  fq_run()
 ```

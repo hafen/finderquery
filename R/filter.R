@@ -1,150 +1,150 @@
 #' Filter categories
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param terms A vector of search terms. If preceded with a "+", (e.g. "+de"), then this term is required to be in the result. If preceded with "-", (e.g. "-en"), then this term is prohibited from appearing in the result.
 #' @export
-filter_category <- function(query, terms) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_category")
+fq_filter_category <- function(query, terms) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_category")
 
-  term_filter(query, "category", terms)
+  fq_term_filter(query, "category", terms)
 }
 
 #' Filter countries
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param terms A vector of search terms. If preceded with a "+", (e.g. "+de"), then this term is required to be in the result. If preceded with "-", (e.g. "-en"), then this term is prohibited from appearing in the result.
 #' @export
-filter_country <- function(query, terms) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_country")
+fq_filter_country <- function(query, terms) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_country")
 
-  term_filter(query, "country", terms)
+  fq_term_filter(query, "country", terms)
 }
 
 #' Filter duplicate
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param bool TRUE or FALSE
 #' @export
-filter_duplicate <- function(query, bool = FALSE) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_duplicate")
+fq_filter_duplicate <- function(query, bool = FALSE) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_duplicate")
 
   term <- ifelse(bool, "true", "false")
-  term_filter(query, "duplicate", term)
+  fq_term_filter(query, "duplicate", term)
 }
 
 #' Filter entityid
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param terms A vector of search terms. If preceded with a "+", (e.g. "+de"), then this term is required to be in the result. If preceded with "-", (e.g. "-en"), then this term is prohibited from appearing in the result.
 #' @export
-filter_entityid <- function(query, terms) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_entityid")
+fq_filter_entityid <- function(query, terms) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_entityid")
 
-  term_filter(query, "entityid", terms)
+  fq_term_filter(query, "entityid", terms)
 }
 
 #' Filter georssid
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param terms A vector of search terms. If preceded with a "+", (e.g. "+de"), then this term is required to be in the result. If preceded with "-", (e.g. "-en"), then this term is prohibited from appearing in the result.
 #' @export
-filter_georssid <- function(query, terms) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_georssid")
+fq_filter_georssid <- function(query, terms) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_georssid")
 
-  term_filter(query, "georssid", terms)
+  fq_term_filter(query, "georssid", terms)
 }
 
 #' Filter guid
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param value guid to filter
 #' @export
-filter_guid <- function(query, value) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_guid")
+fq_filter_guid <- function(query, value) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_guid")
 
   query$filters <- c(query$filters, list(enc(paste0("guid:", value))))
   query
 }
 
 #' Filter indexdate
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param from start date
 #' @param to end date
 #' @param on exact date (if specified, from and to are ignored)
 #' @export
-filter_indexdate <- function(query, from = NULL, to = NULL, on = NULL) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_indexdate")
+fq_filter_indexdate <- function(query, from = NULL, to = NULL, on = NULL) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_indexdate")
 
-  date_filter(query, "indexdate", from, to, on)
+  fq_date_filter(query, "indexdate", from, to, on)
 }
 
 #' Filter language
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param terms A vector of search terms. If preceded with a "+", (e.g. "+de"), then this term is required to be in the result. If preceded with "-", (e.g. "-en"), then this term is prohibited from appearing in the result.
 #' @export
-filter_language <- function(query, terms) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_language")
+fq_filter_language <- function(query, terms) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_language")
 
-  term_filter(query, "language", terms)
+  fq_term_filter(query, "language", terms)
 }
 
 #' Filter pubdate
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param from start date
 #' @param to end date
 #' @param on exact date (if specified, from and to are ignored)
 #' @export
-filter_pubdate <- function(query, from = NULL, to = NULL, on = NULL) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_pubdate")
+fq_filter_pubdate <- function(query, from = NULL, to = NULL, on = NULL) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_pubdate")
 
-  date_filter(query, "pubdate", from, to, on)
+  fq_date_filter(query, "pubdate", from, to, on)
 }
 
 # #' Filter quoteabout
-# #' @param query a [query_fetch()] or [query_facet()] object
+# #' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 # #' @export
-# filter_quoteabout <- function(query) {
-#   check_class(query, c("query_facet", "query_fetch"), "filter_quoteabout")
+# fq_filter_quoteabout <- function(query) {
+#   check_class(query, c("query_facet", "query_fetch"), "fq_filter_quoteabout")
 
-#   term_filter(query, "quoteabout", terms)
+#   fq_term_filter(query, "quoteabout", terms)
 # }
 
 # #' Filter quotecategory
-# #' @param query a [query_fetch()] or [query_facet()] object
+# #' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 # #' @export
-# filter_quotecategory <- function(query, terms) {
-#   check_class(query, c("query_facet", "query_fetch"), "filter_quotecategory")
+# fq_filter_quotecategory <- function(query, terms) {
+#   check_class(query, c("query_facet", "query_fetch"), "fq_filter_quotecategory")
 
-#   term_filter(query, "quotecategory", terms)
+#   fq_term_filter(query, "quotecategory", terms)
 # }
 
 # #' Filter quotetext
-# #' @param query a [query_fetch()] or [query_facet()] object
+# #' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 # #' @export
-# filter_quotetext <- function(query) {
-#   check_class(query, c("query_facet", "query_fetch"), "filter_quotetext")
+# fq_filter_quotetext <- function(query) {
+#   check_class(query, c("query_facet", "query_fetch"), "fq_filter_quotetext")
 # }
 
 # #' Filter quotewho
-# #' @param query a [query_fetch()] or [query_facet()] object
+# #' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 # #' @export
-# filter_quotewho <- function(query, terms) {
-#   check_class(query, c("query_facet", "query_fetch"), "filter_quotewho")
+# fq_filter_quotewho <- function(query, terms) {
+#   check_class(query, c("query_facet", "query_fetch"), "fq_filter_quotewho")
 
-#   term_filter(query, "quotewho", terms)
+#   fq_term_filter(query, "quotewho", terms)
 # }
 
 #' Filter source
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param terms A vector of search terms. If preceded with a "+", (e.g. "+de"), then this term is required to be in the result. If preceded with "-", (e.g. "-en"), then this term is prohibited from appearing in the result.
 #' @export
-filter_source <- function(query, terms) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_source")
+fq_filter_source <- function(query, terms) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_source")
 
-  term_filter(query, "source", terms)
+  fq_term_filter(query, "source", terms)
 }
 
 #' Filter based on text found in title, description, or text, including 
 #'   translations
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param text text to filter
 #' @export
-filter_text <- function(query, text) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_text")
+fq_filter_text <- function(query, text) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_text")
 
   if (length(text) > 1) {
     text <- paste(paste0("+{!babel t=", text, "}"), collapse = " ")
@@ -152,21 +152,21 @@ filter_text <- function(query, text) {
     text <- paste0("{!babel t=", text, "}")
   }
 
-  if (!is.null(query$filter_text))
+  if (!is.null(query$fq_filter_text))
     message("Replacing previously-specified text filter specification")
 
-  query$filter_text <- enc(text)
+  query$fq_filter_text <- enc(text)
   query
 }
 
 #' Filter tonality
-#' @param query a [query_fetch()] or [query_facet()] object
+#' @param query a [fq_query_fetch()] or [fq_query_facet()] object
 #' @param value exact tonality value to filter on (if specified, from and to are ignored)
 #' @param from lower range to filter on
 #' @param to upper range to filter on
 #' @export
-filter_tonality <- function(query, value = NULL, from = NULL, to = NULL) {
-  check_class(query, c("query_facet", "query_fetch"), "filter_tonality")
+fq_filter_tonality <- function(query, value = NULL, from = NULL, to = NULL) {
+  check_class(query, c("query_facet", "query_fetch"), "fq_filter_tonality")
 
   # RANGE
   # search for rssitems with a tonality of -4
@@ -185,9 +185,21 @@ filter_tonality <- function(query, value = NULL, from = NULL, to = NULL) {
   query
 }
 
-term_filter <- function(query, var, terms) {
+# TODO: export this
+fq_term_filter <- function(query, var, terms) {
   res <- paste0(var, ":(", enc(paste(terms, collapse = " ")), ")")
   query$filters <- c(query$filters, list(res))
+  query
+}
+
+# TODO: export this
+fq_date_filter <- function(query, var, from, to, on) {
+  if (!is.null(on)) {
+    res <- paste0(var, ":", fix_date(on))
+  } else {
+    res <- paste0(var, ":[", fix_date(from), " TO ", fix_date(to), "]")
+  }
+  query$filters <- c(query$filters, list(enc(res)))
   query
 }
 
@@ -199,17 +211,6 @@ fix_date <- function(x) {
   }
   x
 }
-
-date_filter <- function(query, var, from, to, on) {
-  if (!is.null(on)) {
-    res <- paste0(var, ":", fix_date(on))
-  } else {
-    res <- paste0(var, ":[", fix_date(from), " TO ", fix_date(to), "]")
-  }
-  query$filters <- c(query$filters, list(enc(res)))
-  query
-}
-
 
 
 # Category
@@ -772,16 +773,16 @@ date_filter <- function(query, var, from, to, on) {
 
 # #' Specify a range filter
 # #'
-# #' @param query a [query_agg()] or [query_fetch()] object
-# #' @param field field name (see [queryable_fields()] for all possibilities)
+# #' @param query a [query_agg()] or [fq_query_fetch()] object
+# #' @param field field name (see [fq_queryable_fields()] for all possibilities)
 # #' @param from the lower value of the range
 # #' @param to the upper value of the range
 # #' @export
-# filter_range <- function(
+# fq_filter_range <- function(
 #   query, field, from = NULL, to = NULL
 # ) {
-#   check_class(query, c("query_agg", "query_fetch"), "filter_range")
-#   check_fields(query, field, "filter_range")
+#   check_class(query, c("query_agg", "query_fetch"), "fq_filter_range")
+#   check_fields(query, field, "fq_filter_range")
 #   # TODO: make sure variable is numeric or date
 #   # long, integer, short, byte, double, float, half_float, scaled_float
 
@@ -801,13 +802,13 @@ date_filter <- function(query, var, from, to, on) {
 
 # #' Specify a match filter
 # #'
-# #' @param query a [query_agg()] or [query_fetch()] object
-# #' @param field field name (see [queryable_fields()] for all possibilities)
+# #' @param query a [query_agg()] or [fq_query_fetch()] object
+# #' @param field field name (see [fq_queryable_fields()] for all possibilities)
 # #' @param match a string to match
 # #' @export
-# filter_match <- function(query, field, match) {
-#   check_class(query, c("query_agg", "query_fetch"), "filter_match")
-#   check_fields(query, field, "filter_match")
+# fq_filter_match <- function(query, field, match) {
+#   check_class(query, c("query_agg", "query_fetch"), "fq_filter_match")
+#   check_fields(query, field, "fq_filter_match")
 #   res <- list(
 #     match = list()
 #   )
@@ -820,13 +821,13 @@ date_filter <- function(query, var, from, to, on) {
 
 # #' Specify a regexp filter
 # #'
-# #' @param query a [query_agg()] or [query_fetch()] object
-# #' @param field field name (see [queryable_fields()] for all possibilities)
+# #' @param query a [query_agg()] or [fq_query_fetch()] object
+# #' @param field field name (see [fq_queryable_fields()] for all possibilities)
 # #' @param regexp a regular expression string to match
 # #' @export
-# filter_regexp <- function(query, field, regexp) {
-#   check_class(query, c("query_agg", "query_fetch"), "filter_match")
-#   check_fields(query, field, "filter_regexp")
+# fq_filter_regexp <- function(query, field, regexp) {
+#   check_class(query, c("query_agg", "query_fetch"), "fq_filter_match")
+#   check_fields(query, field, "fq_filter_regexp")
 
 #   res <- list(
 #     regexp = list()
@@ -839,14 +840,14 @@ date_filter <- function(query, var, from, to, on) {
 
 # #' Specify a terms filter
 # #'
-# #' @param query a [query_agg()] or [query_fetch()] object
-# #' @param field field name (see [queryable_fields()] for all possibilities)
+# #' @param query a [query_agg()] or [fq_query_fetch()] object
+# #' @param field field name (see [fq_queryable_fields()] for all possibilities)
 # #' @param terms a string or vector of strings to exact match
 # #' @importFrom jsonlite toJSON
 # #' @export
-# filter_terms <- function(query, field, terms) {
-#   check_class(query, c("query_agg", "query_fetch"), "filter_terms")
-#   check_fields(query, field, "filter_terms")
+# fq_filter_terms <- function(query, field, terms) {
+#   check_class(query, c("query_agg", "query_fetch"), "fq_filter_terms")
+#   check_fields(query, field, "fq_filter_terms")
 
 #   tm <- ifelse(length(terms) == 1, "term", "terms")
 #   res <- list()

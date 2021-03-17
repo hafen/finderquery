@@ -39,7 +39,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -85,46 +85,44 @@
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>You can install the package from Github with:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="co"># install.packages("remotes")</span>
-<span class="kw">remotes</span>::<span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">"hafen/finderquery"</span>)
-</pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># install.packages("remotes")</span>
+<span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span><span class="op">(</span><span class="st">"hafen/finderquery"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="examples" class="section level2">
 <h2 class="hasAnchor">
 <a href="#examples" class="anchor"></a>Examples</h2>
 <p>See the full “usage” documentation for many more examples as well as details on how everything works.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">finderquery</span>)
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">finderquery</span><span class="op">)</span>
 
 <span class="co"># specify Finder location</span>
-<span class="kw">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/finder_connect.html">finder_connect</a></span>(<span class="st">"10.49.4.6"</span>)
+<span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/finder_connect.html">finder_connect</a></span><span class="op">(</span><span class="st">"10.49.4.6"</span><span class="op">)</span>
 
 <span class="co"># query all documents in German that have category "CoronavirusInfection" </span>
 <span class="co"># that were published in the last two days, sorted by publication date</span>
-<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/query_fetch.html">query_fetch</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="reference/filter_language.html">filter_language</a></span>(<span class="st">"de"</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="reference/filter_category.html">filter_category</a></span>(<span class="st">"CoronavirusInfection"</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">2</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="reference/run.html">run</a></span>()
+<span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">query_fetch</span><span class="op">(</span><span class="va">con</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">filter_language</span><span class="op">(</span><span class="st">"de"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">filter_category</span><span class="op">(</span><span class="st">"CoronavirusInfection"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">filter_pubdate</span><span class="op">(</span>from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">2</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="reference/fq_run.html">fq_run</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># count documents by top 10 categories over the last 2 days</span>
-<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="reference/filter_pubdate.html">filter_pubdate</a></span>(from = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">2</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="reference/facet_by.html">facet_by</a></span>(<span class="st">"category"</span>, limit = <span class="fl">10</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="reference/run.html">run</a></span>()
+<span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fq_query_facet.html">fq_query_facet</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">filter_pubdate</span><span class="op">(</span>from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">2</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">facet_by</span><span class="op">(</span><span class="st">"category"</span>, limit <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="reference/fq_run.html">fq_run</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># count documents daily for all "CoronavirusInfection" articles over</span>
 <span class="co"># the last 20 days, hourly</span>
-<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/query_facet.html">query_facet</a></span>(<span class="kw">con</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="reference/filter_category.html">filter_category</a></span>(<span class="st">"coronavirusinfection"</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="reference/facet_date_range.html">facet_date_range</a></span>(
-    start = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()) <span class="op">-</span> <span class="fl">20</span>,
-    end = <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span>()),
-    gap = <span class="fu"><a href="reference/range_gap.html">range_gap</a></span>(<span class="fl">1</span>, <span class="st">"HOUR"</span>)
-  ) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="reference/run.html">run</a></span>()
-</pre></div>
+<span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fq_query_facet.html">fq_query_facet</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">filter_category</span><span class="op">(</span><span class="st">"coronavirusinfection"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">facet_date_range</span><span class="op">(</span>
+    start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">20</span>,
+    end <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,
+    gap <span class="op">=</span> <span class="fu">range_gap</span><span class="op">(</span><span class="fl">1</span>, <span class="st">"HOUR"</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="reference/fq_run.html">fq_run</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
   </div>

@@ -10,9 +10,9 @@
 #' @param format One of "list", "xml", "file". In the case of "file",
 #'   The path to the file will be returned. In all other cases, an object
 #'   with the fetched data will be returned in the format specified. List 
-#'   results are converted using [xml_to_list()].
+#'   results are converted using [fq_xml_to_list()].
 #' @export
-query_fetch <- function(
+fq_query_fetch <- function(
   con, path = NULL, max = 10, size = 10000,
   format = c("list", "xml", "file")
 ) {
@@ -62,5 +62,5 @@ query_fetch <- function(
     try_read = try_read,
     filters = list(),
     filter_text = NULL
-  ), class = c("es_query", "query_fetch"))
+  ), class = c("fq_query", "query_fetch"))
 }

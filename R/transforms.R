@@ -1,9 +1,9 @@
 #' Convert Finder xml result into a more convenient R list format
-#' @param x an object of class "xml_document" obtained from [query_fetch()]
+#' @param x an object of class "xml_document" obtained from [fq_query_fetch()]
 #' @export
-xml_to_list <- function(x) {
+fq_xml_to_list <- function(x) {
   if (!inherits(x, "xml_document"))
-    stop("Input to xml_to_list() must have class 'xml_document'.",
+    stop("Input to fq_xml_to_list() must have class 'xml_document'.",
       call. = FALSE)
 
   x <- xml2::as_list(x)
@@ -70,19 +70,19 @@ xml_to_list <- function(x) {
 list_cols <- c("entity", "category", "fullgeo")
 
 #' Convert documents list to data frame
-#' @param x an object of class "xml_document" or "finder_docs" obtained from [query_fetch()].
+#' @param x an object of class "xml_document" or "finder_docs" obtained from [fq_query_fetch()].
 #' @details In general, a lot of information can be lost when transforming to a data frame, such as attributes or entries that have more than one element. Columns "title" and "description" often have two elements with the second being the English translation. Because of this, columns "title", "title_en", "description", and "description_en" are created to preserve this. Columns "entity", "category", "fullgeo" usually have more than one entry for each document and as such are added to the data frame as "list columns".
 #' @export
 #' @importFrom dplyr bind_rows
 #' @importFrom tibble as_tibble
-list_to_df <- function(x) {
+fq_list_to_df <- function(x) {
   if (inherits(x, "xml_document")) {
     message("Provided input was xml, not a list... Attempting to transform...")
-    x <- xml_to_list(x)
+    x <- fq_xml_to_list(x)
   }
 
   if (!(inherits(x, "finder_docs") && inherits(x, "list")))
-    stop("list_to_df() expects an object returned from query_fetch()",
+    stop("fq_list_to_df() expects an object returned from fq_query_fetch()",
       call. = FALSE)
 
   res <- lapply(x, function(el) {
@@ -121,15 +121,15 @@ list_to_df <- function(x) {
 }
 
 #' Write xml documents to a csv file
-#' @param x an object of class "xml_document" or "finder_docs" obtained from [query_fetch()].
+#' @param x an object of class "xml_document" or "finder_docs" obtained from [fq_query_fetch()].
 #' @param collapse The separator character to use to collapse list column fields.
 #' @param \ldots Parameters sent to [readr::write_csv()].
 #' @details List columns of the data frame will be collapsed. Currently these columns are "entity", "category", "fullgeo"
 #' @export
 #' @importFrom readr write_csv
-write_docs_csv <- function(x, collapse = ";", ...) {
+fq_write_docs_csv <- function(x, collapse = ";", ...) {
   if (!(inherits(x, "finder_docs") && inherits(x, "data.frame")))
-    x <- list_to_df(x)
+    x <- fq_list_to_df(x)
 
   for (nm in list_cols)
     x[[nm]] <- unlist(lapply(x[[nm]],

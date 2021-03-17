@@ -37,61 +37,61 @@ build_query <- function(
 
   if (!missing(category)) {
     category <- up(category)
-    qry <- qry %>% filter_category(category)
+    qry <- qry %>% fq_filter_category(category)
   }
 
   if (!missing(country)) {
     country <- up(country)
-    qry <- qry %>% filter_country(country)
+    qry <- qry %>% fq_filter_country(country)
   }
 
   if (!missing(language)) {
     language <- up(language)
-    qry <- qry %>% filter_language(language)
+    qry <- qry %>% fq_filter_language(language)
   }
 
   if (!missing(source)) {
     source <- up(source)
-    qry <- qry %>% filter_source(source)
+    qry <- qry %>% fq_filter_source(source)
   }
 
   if (!missing(duplicate)) {
     duplicate <- up(duplicate)
-    qry <- qry %>% filter_duplicate(duplicate)
+    qry <- qry %>% fq_filter_duplicate(duplicate)
   }
 
   pubdate <- up(pubdate)
   if (!all(pubdate == "null"))
-    qry <- qry %>% filter_pubdate(
+    qry <- qry %>% fq_filter_pubdate(
       from = if(pubdate[1] == "null") { NULL } else { as.Date(pubdate[1])},
       to = if(pubdate[2] == "null") { NULL } else { as.Date(pubdate[2])})
 
   indexdate <- up(indexdate)
   if (!all(indexdate == "null"))
-    qry <- qry %>% filter_indexdate(
+    qry <- qry %>% fq_filter_indexdate(
       from = if(indexdate[1] == "null") { NULL } else { as.Date(indexdate[1])},
       to = if(indexdate[2] == "null") { NULL } else { as.Date(indexdate[2])})
 
   if (!missing(text))
-    qry <- qry %>% filter_text(text)
+    qry <- qry %>% fq_filter_text(text)
 
   if (!missing(entityid))
-    qry <- qry %>% filter_entityid(entityid)
+    qry <- qry %>% fq_filter_entityid(entityid)
 
   if (!missing(georssid))
-    qry <- qry %>% filter_georssid(georssid)
+    qry <- qry %>% fq_filter_georssid(georssid)
 
   if (!missing(guid))
-    qry <- qry %>% filter_guid(guid)
+    qry <- qry %>% fq_filter_guid(guid)
 
   tonality <- as.integer(up(tonality))
   if (tonality[1] != -100 || tonality[2] != 100)
-    qry <- qry %>% filter_tonality(from = tonality[1], to = tonality[2])
+    qry <- qry %>% fq_filter_tonality(from = tonality[1], to = tonality[2])
 
   if (!is.null(fields)) {
     fields <- up(fields)
-    if (length(fields) != length(selectable_fields()))
-      qry <- qry %>% select_fields(fields)
+    if (length(fields) != length(fq_selectable_fields()))
+      qry <- qry %>% fq_select_fields(fields)
   }
 
   qry  
@@ -112,14 +112,14 @@ function(
   if (dev_server) {
     nd <- ifelse(runif(1) < 0.8, 10000, 10000000)
   } else {
-    nd <- n_docs(finderquery::run(qry))
+    nd <- fq_n_docs(finderquery::fq_run(qry))
   }
 
-  message(finderquery::get_query(qry))
+  message(finderquery::fq_get_query(qry))
 
   return(list(
     n_docs = nd,
-    query = paste0(qry$con$con, finderquery::get_query(qry))
+    query = paste0(qry$con$con, finderquery::fq_get_query(qry))
   ))
 }
 
@@ -147,7 +147,7 @@ function(
     for (i in 1:5)
       cat("test", file = file.path(path, sprintf("output%04d.xml", i)))
   } else {
-    finderquery::run(qry)
+    finderquery::fq_run(qry)
   }
 
   if (format == "csv") {
@@ -155,10 +155,10 @@ function(
 
     for (f in ff) {
       tmp <- xml2::read_xml(f)
-      tmp2 <- xml_to_list(tmp)
-      tmpdf <- list_to_df(tmp2)
+      tmp2 <- fq_xml_to_list(tmp)
+      tmpdf <- fq_list_to_df(tmp2)
       f2 <- gsub("xml$", "csv", f)
-      write_docs_csv(tmpdf, file = f2)
+      fq_write_docs_csv(tmpdf, file = f2)
       unlink(f)
     }
   }

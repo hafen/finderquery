@@ -2,17 +2,17 @@
 #'
 #' @param con A finder connection object from [finder_connect()].
 #' @export
-query_facet <- function(con) {
+fq_query_facet <- function(con) {
   structure(list(
     con = con,
     filters = list()
-  ), class = c("es_query", "query_facet"))
+  ), class = c("fq_query", "query_facet"))
 }
 
 #' Specify a field to facet by
-#' @param query a [query_facet()] object
+#' @param query a [fq_query_facet()] object
 #' @param field field name or vector of two field names
-#'   (see [facetable_fields()] for all possibilities)
+#'   (see [fq_facetable_fields()] for all possibilities)
 #' @param sort Controls how faceted results are sorted.
 # sort: Sort the constraints by count (highest count first).
 # index: Return the constraints sorted in their index order (lexicographic by indexed term). For terms in the ASCII range, this will be alphabetically sorted.
@@ -20,21 +20,21 @@ query_facet <- function(con) {
 #' @param offset Specifies an offset into the facet results at which to begin displaying facets.
 #' @param mincount Specifies the minimum counts required for a facet field to be included in the response.
 #' @export
-facet_by <- function(query,
+fq_facet_by <- function(query,
   field, limit = -1, sort = c("count", "index"), mincount = 0, offset = 0
 ) {
   check_class(query, c("query_facet"), "facet_by")
   sort <- match.arg(sort)
 
-  if (!all(field %in% facetable_fields()))
-    stop("'facet_by()' field name is not one of the values found in ",
-      "facetable_fields().")
+  if (!all(field %in% fq_facetable_fields()))
+    stop("'fq_facet_by()' field name is not one of the values found in ",
+      "fq_facetable_fields().")
 
   if (!is.null(query$facet))
     message("Replacing previously-specified facet specification")
 
   if (length(field) > 2)
-    stop("'facet_by()' can only have one or two fields specified.")
+    stop("'fq_facet_by()' can only have one or two fields specified.")
 
   query$facet <- list(
     type = ifelse(length(field) == 1, "field", "pivot"),
@@ -55,7 +55,7 @@ facet_by <- function(query,
 
 #' Get a list of facetable fields
 #' @export
-facetable_fields <- function() {
+fq_facetable_fields <- function() {
   c("language", "category", "country", "source", "quotewho",
     "quotecategory", "duplicate")
 }
@@ -64,20 +64,20 @@ facetable_fields <- function() {
 
 # all existing values for source, with corresponding count
 #   rows=0 facet=true facet.field=source facet.limit=-1 facet.mincount=1 facet.method=fcs native=true *:*
-# aa <- query_str(con, "op=search&q=*%3A*&facet.field=source&rows=0&facet=true&facet.limit=-1&facet.mincount=1&facet.method=fcs&native=true", format = "xml") %>%
-#   run()
+# aa <- fq_query_str(con, "op=search&q=*%3A*&facet.field=source&rows=0&facet=true&facet.limit=-1&facet.mincount=1&facet.method=fcs&native=true", format = "xml") %>%
+#   fq_run()
 
 # top 10 (based on count) existing values for source, with corresponding count, sorted by count
 #   rows=0 facet=true facet.field=source facet.limit=10 facet.sort=count facet.method=fcs native=true *:*
-# aa <- query_str(con, "op=search&q=*%3A*&facet.sort=count&facet.field=source&rows=0&facet=true&facet.limit=10&facet.method=fcs&native=true", format = "xml") %>%
-#   run()
+# aa <- fq_query_str(con, "op=search&q=*%3A*&facet.sort=count&facet.field=source&rows=0&facet=true&facet.limit=10&facet.method=fcs&native=true", format = "xml") %>%
+#   fq_run()
 
 # all existing values for source, with corresponding count, for rssitem from Germany, in German, published in the last 7 days
 
 # rows=0 facet=true facet.field=source facet.limit=-1 facet.method=fcs native=true +country:DE +language:de fq=pubdate:[NOW/DAY-7DAY TO *]
 
-# aa <- query_str(con, "op=search&q=%2Bcountry%3ADE%20%2Blanguage%3Ade&facet.field=source&fq=pubdate%3A%5BNOW%2FDAY-7DAY%20TO%20*%5D&rows=0&facet=true&facet.limit=-1&facet.method=fcs&native=true", format = "xml") %>%
-#   run()
+# aa <- fq_query_str(con, "op=search&q=%2Bcountry%3ADE%20%2Blanguage%3Ade&facet.field=source&fq=pubdate%3A%5BNOW%2FDAY-7DAY%20TO%20*%5D&rows=0&facet=true&facet.limit=-1&facet.method=fcs&native=true", format = "xml") %>%
+#   fq_run()
 
 
 
@@ -91,7 +91,7 @@ facetable_fields <- function() {
 #' @param num the number of units to use for a date gap
 #' @param units the units to use for a date gap, one of "DAY", "MINUTE", "HOUR", "WEEK", "MONTH", "YEAR"
 #' @export
-range_gap <- function(
+fq_range_gap <- function(
   num = 1,
   units = c("DAY", "MINUTE", "HOUR", "WEEK", "MONTH", "YEAR")
 ) {
@@ -101,19 +101,19 @@ range_gap <- function(
 }
 
 #' Specify a date range facet
-#' @param query a [query_facet()] object
+#' @param query a [fq_query_facet()] object
 #' @param field field name (one of "pubdate" or "indexdate")
 #' @param start start date
 #' @param end end date
-#' @param gap gap object from [range_gap()]
+#' @param gap gap object from [fq_range_gap()]
 #' @export
-facet_date_range <- function(query, field = c("pubdate", "indexdate"), start, end, gap) {
+fq_facet_date_range <- function(query, field = c("pubdate", "indexdate"), start, end, gap) {
   check_class(query, c("query_facet"), "facet_by")
 
   field <- match.arg(field)
 
   if (!inherits(gap, "range_gap"))
-    stop("Parameter 'gap' must be specified through range_gap()", call. = FALSE)
+    stop("Parameter 'gap' must be specified through fq_range_gap()", call. = FALSE)
 
   query$facet <- list(
     type = "date_range",

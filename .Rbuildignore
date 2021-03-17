@@ -10,3 +10,4 @@
 ^.dockerignore$
 ^Dockerfile$
 ^docker$
+^docker-compose.yml$
