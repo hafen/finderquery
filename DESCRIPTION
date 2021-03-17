@@ -1,6 +1,6 @@
 Package: finderquery
 Title: Utilities for Building EIOS Finder Queries
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     person(given = "Ryan",
            family = "Hafen",
@@ -19,7 +19,8 @@ Imports:
     xml2,
     tibble,
     dplyr,
-    readr
+    readr,
+    rlang
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,

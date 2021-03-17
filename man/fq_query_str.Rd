@@ -17,7 +17,7 @@ fq_query_str(
 \arguments{
 \item{con}{A finder connection object from \code{\link[=finder_connect]{finder_connect()}}.}
 
-\item{str}{A SOLR query string, e.g. "op=search&q=\emph{:}&rows=0".}
+\item{str}{A SOLR query string, e.g. "op=search&q=\emph{:}".}
 
 \item{path}{An optional directory in which to place downloaded results
 (required when \code{format="file"}).}
@@ -32,7 +32,7 @@ results are converted using \code{\link[=fq_xml_to_list]{fq_xml_to_list()}}.}
 
 \item{max}{The maximum number of documents to fetch (used when
 type=="fetch"). Set to <0 to fetch all. When fetching all it is a
-good idea to first fetch with only a few documents and use \code{\link[=n_docs]{n_docs()}}
+good idea to first fetch with only a few documents and use \code{\link[=fq_n_docs]{fq_n_docs()}}
 to get a sense of how many will be pulled.}
 
 \item{size}{The number of documents to fetch in each batch (max is

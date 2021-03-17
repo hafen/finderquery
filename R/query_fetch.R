@@ -5,7 +5,7 @@
 #'   (required when `format="file"`).
 #' @param max The maximum number of documents to fetch. Set to <0 to fetch
 #'   all. When fetching all it is a good idea to first fetch with only a few
-#'   documents and use [n_docs()] to get a sense of how many will be pulled.
+#'   documents and use [fq_n_docs()] to get a sense of how many will be pulled.
 #' @param size The number of documents to fetch in each batch (max is 10000).
 #' @param format One of "list", "xml", "file". In the case of "file",
 #'   The path to the file will be returned. In all other cases, an object

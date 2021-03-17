@@ -19,8 +19,7 @@ finder_connect <- function(
 }
 
 enc <- function(x) {
-  utils::URLencode(x,
-    reserved = TRUE, repeated = TRUE)
+  utils::URLencode(x, reserved = TRUE)
 }
 
 # #' @export

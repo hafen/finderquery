@@ -20,7 +20,7 @@ fq_query_fetch(
 
 \item{max}{The maximum number of documents to fetch. Set to <0 to fetch
 all. When fetching all it is a good idea to first fetch with only a few
-documents and use \code{\link[=n_docs]{n_docs()}} to get a sense of how many will be pulled.}
+documents and use \code{\link[=fq_n_docs]{fq_n_docs()}} to get a sense of how many will be pulled.}
 
 \item{size}{The number of documents to fetch in each batch (max is 10000).}
 

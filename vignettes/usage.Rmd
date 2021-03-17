@@ -14,6 +14,15 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Installation
+
+To install the version of finderquery described in this documentation, do the following:
+
+```r
+# install.packages("remotes") # if not already installed
+remotes::install_github("hafen/finderquery@updates")
+```
+
 # Setup
 
 The first thing to do is to establish a connection with the Finder server by specifying its IP address and optionally the port. In our case, it is stored in an environment variable `FINDER_IP`.
@@ -24,9 +33,9 @@ library(finderquery)
 con <- finder_connect(Sys.getenv("FINDER_IP"))
 ```
 
-This connection object is passed to queries so it knows where to go to run the query.
+This connection object is passed to queries so it knows where to go to run the query. Note that calling `finder_connect()` does not actually initiate a connection. It only stores an object that tells future queries where to go to run.
 
-Note that if you are working in an R console on the `.18` or `.19` machines, you may need to run the following for the Solr server to be reachable:
+Note that if you are working in an R console on some machines, you may need to run the following for the Solr server to be reachable:
 
 ```r
 Sys.unsetenv("NO_PROXY")
@@ -181,8 +190,6 @@ fq_n_docs(res)
 #> 9004209
 ```
 
-<!-- Note that for some reason an empty query returns a smaller number of documents than is actually available in the document store. -->
-
 ### Adding filters to fetch queries
 
 It is probably more desirable for a fetch query to pinpoint records of interest rather than to retrieve all documents. This can be done by adding filters to the query.
@@ -326,6 +333,20 @@ head(fq_valid_duplicate(con))
 #> [1] "false" "true" 
 ```
 
+##### Generic term field filters
+
+The `fq_filter_*()` functions described in this section are provided to help users create queries that do not contain errors, providing term filters the known available fields. However, as the Finder database evolves, or as different versions of the Finder database are used, there may be additional fields for which users would like to be able to define filters on. For this case, a function, `fq_term_filter()` has been provided. This allows you to specify the field name you would like to apply a term filter to. Note that using this function incorrectly (referencing a field that doesn't exist or can't be filtered as a term filter) will result in query errors.
+
+As an example, let's run the most recent query using `fq_term_filter()`. To do this:
+
+```r
+res <- fq_query_fetch(con, max = 10) %>%
+  fq_term_filter("duplicate", TRUE) %>%
+  fq_run()
+```
+
+If you would like to add a special term filter function for a new field, you can update the R/filter.R file in the package source code based on the contents of other specific term filter functions.
+
 #### Text filter
 
 The `fq_filter_text()` function allows you to specify strings or a vector of strings to search for in the document's title, description, and document text, including translations.
@@ -359,6 +380,24 @@ res <- fq_query_fetch(con, max = 20) %>%
   fq_run()
 ```
 
+##### Generic text filter
+
+`fq_filter_text()` is designed to have a simple syntax. It constructs the `q=...` part of the query string based on simple inputs. If you have a much more custom `q=...` query that you would like to specify explicitly, you can use a special function, `fq_q()`.
+
+For example, 
+
+```r
+res <- fq_query_fetch(con, max = 10) %>%
+  fq_q("+( 
+(
++{!babel t=\"(health healthcare \\\"health care\\\" \\\"health-care\\\" medical)\"}
++{!babel t=\"(specialist* provider* professional* practitioner* doctor* worker* personnel staff)\"}
+)
+{!babel t=\"(physician* \\\"general practitioner\\\" therapist* nurse* midwife* caregiver* \\\"care provider\\\" gastroenterologist* surgeon* dentist* psychiatrist* pharmacist* ophthalmologist* cardiologist* anaesthesiologist* anesthesiologist* dermatologist* endocrinologist* geriatrician* haematologist*  hematologist* nephrologist* neurologist* oncologist* otolaryngologist* pulmonologist* paediatrician* pediatrician* radiologist* urologist*)\"}
+)") %>%
+  fq_run()
+```
+
 #### Date filters
 
 Two date filter functions are available, `fq_filter_pubdate()` and `fq_filter_indexdate()`, which filter on the publication date and indexed date, respectively.
@@ -376,6 +415,18 @@ res <- fq_query_fetch(con) %>%
 ```
 
 Note here that we are stringing multiple filter commands together to get to what we are looking for. You can string as many filters together as you wish, but note that if you apply the same filter twice, the second one will override the first.
+
+##### Generic date filter
+
+Similar to the generic term filter function `fq_term_filter()` described above, there is also a generic date filter function `fq_date_filter()`, which operates in a similar way and based on a similar premise of the possibility of the database having date fields in addition to the date fields we provide specific functions for.
+
+For example, to filter on pubdate using `fq_date_filter()`:
+
+```r
+res <- fq_query_fetch(con) %>%
+  fq_date_filter("pubdate", from = as.Date(Sys.time()) - 2) %>%
+  fq_run()
+```
 
 #### Other filters
 
@@ -593,7 +644,7 @@ Note that since 14k documents isn't that large, we may want to read them all int
 
 ```r
 xml <- lapply(list.files(tf, full.names = TRUE), xml2::read_xml)
-docs <- unlist(lapply(xml,xml_to_list), recursive = FALSE)
+docs <- unlist(lapply(xml, xml_to_list), recursive = FALSE)
 length(docs)
 #> [1] 14032
 ```
@@ -687,6 +738,10 @@ To see what fields are avilable to facet on:
 fq_facetable_fields()
 ```
 
+#### Updating facetable fields
+
+If you are working with an updated database and you believe that additional fields are facetable, you can update the package source code in R/query_facet.R. `fq_facetable_fields()` simply returns a vector of field names. You can add field names to this vector. Note that you should experiment with faceting on any additional fields to ensure that the queries work before adding them to this list.
+
 ### Faceting by dates
 
 A faceting function is available to specify faceting on dates, `fq_facet_date_range()`.
@@ -767,40 +822,146 @@ res <- fq_query_facet(con) %>%
 There are many ways queries can be constructed with Solr/Finder. The functions for fetching and faceting provided above are meant to cover the vast majority of use cases, but their simplified API might not allow for some very special cases. If one is very familiar with Finder/Solr and wants to use this package to execute their own custom queries, there is a simple mechanism for doing this:
 
 ```r
-# query_str() allows you to run a query that you have already constructed a query string for
+# fq_query_str() allows you to run a query that you have already constructed a query string for
 # default is to return a list
-res <- query_str(con, "op=search&q=*:*&rows=0") %>%
+res <- fq_query_str(con, "op=search&q=*:*") %>%
   fq_run()
-str(res$rss$channel, 1)
-#> List of 8
-#>  $ title   : list()
-#>  $ pubDate :List of 1
-#>  $ q       :List of 1
-#>  $ message : list()
-#>  $ QTime   :List of 1
-#>  $ numFound:List of 1
-#>  $ start   :List of 1
-#>  $ rows    :List of 1
 
 # to return in xml format
-res <- query_str(con, "op=search&q=*:*&rows=0", format = "xml") %>%
+res <- fq_query_str(con, "op=search&q=*:*", format = "xml") %>%
   fq_run()
 
 res
 #> {xml_document}
-#> <rss version="2.0" xmlns:emm="http://emm.jrc.it" xmlns:iso="http://www.iso.org/ 3166" xmlns:gphin="http://gphin.canada.ca">
-#> [1] <channel>\n  <title/>\n  <pubDate>Sat, 12 Sep 2020 22:01:54 UTC</pubDate>\n  < ...
+#> <rss version="2.0" xmlns:emm="http://emm.jrc.it" xmlns:iso="http://www.iso.org/3166" xmlns:gphin="http://gphin.canada.ca">
+#> [1] <channel>\n  <title/>\n  <pubDate>Wed, 17 Mar 2021 07 ...
+```
+
+A general practice for using `fq_query_str()` might be to start by using the more basic functions provided by this package and call `fq_get_query()` to get a basic query string to work with, which you can then customize as needed.
+
+Note that when using `fq_query_str()`, at query execution, we do not know whether the query is for fetching, faceting, or something else. Therefore we don't know how to handle the output. For example, with fetch queries, the query execution has convenient pagination and output formatting functionality built in. For faceting queries, an otherwise unpleasant transformation from xml/list format to a data frame is done. To take advantage of this functionality with `fq_query_str()`, there is an argument, `type`, that you can specify that will allow you to inform the query execution that it is a "fetch" or "facet" query (default is "unknown").
+
+For example, suppose we have the following query string we want to run:
+
+```r
+res <- fq_query_str(con, "op=search&q=+( 
+(
++{!babel t=\"(health healthcare \\\"health care\\\" \\\"health-care\\\" medical)\"}
++{!babel t=\"(specialist* provider* professional* practitioner* doctor* worker* personnel staff)\"}
+)
+{!babel t=\"(physician* \\\"general practitioner\\\" therapist* nurse* midwife* caregiver* \\\"care provider\\\" gastroenterologist* surgeon* dentist* psychiatrist* pharmacist* ophthalmologist* cardiologist* anaesthesiologist* anesthesiologist* dermatologist* endocrinologist* geriatrician* haematologist*  hematologist* nephrologist* neurologist* oncologist* otolaryngologist* pulmonologist* paediatrician* pediatrician* radiologist* urologist*)\"}
+) 
++pubdate:[2021-01-01T00:00:00Z TO 2021-01-01T23:59:59Z]
++category:CoronavirusInfection
++language:en
++duplicate:false&rows=100", type = "fetch", max = 100) %>%
+  fq_select_fields("pubDate") %>%
+  fq_run()
+```
+
+Since we have specified `type = "fetch"`, it is treated as a fetch query and functions like `fq_select_fields()` work in association with the query string.
+
+Note that this particular custom query string could actually be written without the use of `fq_query_str()`:
+
+```r
+res <- fq_query_fetch(con, max = 100) %>%
+  fq_q("+( 
+(
++{!babel t=\"(health healthcare \\\"health care\\\" \\\"health-care\\\" medical)\"}
++{!babel t=\"(specialist* provider* professional* practitioner* doctor* worker* personnel staff)\"}
+)
+{!babel t=\"(physician* \\\"general practitioner\\\" therapist* nurse* midwife* caregiver* \\\"care provider\\\" gastroenterologist* surgeon* dentist* psychiatrist* pharmacist* ophthalmologist* cardiologist* anaesthesiologist* anesthesiologist* dermatologist* endocrinologist* geriatrician* haematologist*  hematologist* nephrologist* neurologist* oncologist* otolaryngologist* pulmonologist* paediatrician* pediatrician* radiologist* urologist*)\"}
+)") %>%
+  fq_filter_pubdate(
+    from = as.POSIXct("2021-01-01 00:00:00"),
+    to = as.POSIXct("2021-01-01 23:59:59")) %>%
+  fq_filter_category("CoronavirusInfection") %>%
+  fq_filter_language("en") %>%
+  fq_filter_duplicate() %>%
+  fq_select_fields("pubDate") %>%
+  fq_run()
+```
+
+Also note that we can pass the string to `fq_query_str()` URL-encoded:
+
+```r
+res <- fq_query_str(con, "op=search&q=%2B(%20%0A(%0A%2B%7B!babel%20t%3D%22(health%20healthcare%20%5C%22health%20care%5C%22%20%5C%22health-care%5C%22%20medical)%22%7D%0A%2B%7B!babel%20t%3D%22(specialist*%20provider*%20professional*%20practitioner*%20doctor*%20worker*%20personnel%20staff)%22%7D%0A)%0A%7B!babel%20t%3D%22(physician*%20%5C%22general%20practitioner%5C%22%20therapist*%20nurse*%20midwife*%20caregiver*%20%5C%22care%20provider%5C%22%20gastroenterologist*%20surgeon*%20dentist*%20psychiatrist*%20pharmacist*%20ophthalmologist*%20cardiologist*%20anaesthesiologist*%20anesthesiologist*%20dermatologist*%20endocrinologist*%20geriatrician*%20haematologist*%20%20hematologist*%20nephrologist*%20neurologist*%20oncologist*%20otolaryngologist*%20pulmonologist*%20paediatrician*%20pediatrician*%20radiologist*%20urologist*)%22%7D%0A)%20%0A%2Bpubdate%3A%5B2021-01-01T00%3A00%3A00Z%20TO%202021-01-01T23%3A59%3A59Z%5D%0A%2Bcategory%3ACoronavirusInfection%0A%2Blanguage%3Aen%0A%2Bduplicate%3Afalse&rows=2", type = "fetch") %>%
+  fq_select_fields("pubDate") %>%
+  fq_run()
+```
+
+Also, note that features like pagination work with `fq_query_str()`:
+
+```r
+res <- fq_query_str(con, "op=search&q=+( 
+(
++{!babel t=\"(health healthcare \\\"health care\\\" \\\"health-care\\\" medical)\"}
++{!babel t=\"(specialist* provider* professional* practitioner* doctor* worker* personnel staff)\"}
+)
+{!babel t=\"(physician* \\\"general practitioner\\\" therapist* nurse* midwife* caregiver* \\\"care provider\\\" gastroenterologist* surgeon* dentist* psychiatrist* pharmacist* ophthalmologist* cardiologist* anaesthesiologist* anesthesiologist* dermatologist* endocrinologist* geriatrician* haematologist*  hematologist* nephrologist* neurologist* oncologist* otolaryngologist* pulmonologist* paediatrician* pediatrician* radiologist* urologist*)\"}
+) 
++pubdate:[2021-01-01T00:00:00Z TO 2021-01-01T23:59:59Z]
++category:CoronavirusInfection
++language:en
++duplicate:false&rows=100",
+    type = "fetch", max = 100, size = 10, path = pth) %>%
+  fq_select_fields("pubDate") %>%
+  fq_run()
+#> 10 documents fetched (10%)...
+#> 20 documents fetched (20%)...
+#> 30 documents fetched (30%)...
+#> 40 documents fetched (40%)...
+#> 50 documents fetched (50%)...
+#> 60 documents fetched (60%)...
+#> 70 documents fetched (70%)...
+#> 80 documents fetched (80%)...
+#> 90 documents fetched (90%)...
+#> 100 documents fetched (100%)...
+```
+
+Finally, an example with `type="facet"`.
+
+From a previous example:
+
+```r
+fq_query_facet(con) %>%
+  fq_filter_pubdate(from = as.Date(Sys.time()) - 2) %>%
+  fq_facet_by("category") %>%
+  fq_get_query()
+#> [1] "op=search&q=*:*&rows=0&facet=true&native=true&facet.field=category&facet.limit=-1&facet.sort=count&facet.mincount=0&facet.offset=0&fq=pubdate%3A%5B2020-09-10T00%3A00%3A00Z%20TO%20%2A%5D"
+```
+
+We can run this query with the `fq_query_str()` with the following:
+
+```r
+res <- fq_query_str(con, "op=search&q=*:*&rows=0&facet=true&native=true&facet.field=category&facet.limit=-1&facet.sort=count&facet.mincount=0&facet.offset=0&fq=pubdate%3A%5B2020-09-10T00%3A00%3A00Z%20TO%20%2A%5D") %>%
+  fq_run()
+```
+
+However, note that the result is a messy list:
+
+If we update this to specify `type="facet"`, we get the desired result:
+
+```r
+res <- fq_query_str(con, "op=search&q=*:*&rows=0&facet=true&native=true&facet.field=category&facet.limit=-1&facet.sort=count&facet.mincount=0&facet.offset=0&fq=pubdate%3A%5B2020-09-10T00%3A00%3A00Z%20TO%20%2A%5D", type = "facet") %>%
+  fq_run()
+#> # A tibble: 10 x 2
+#>    category                            n
+#>    <chr>                           <dbl>
+#>  1 fifa2018participatingcountries 458411
+#>  2 euro                           452639
+#>  3 coronavirusinfection           209279
+#>  4 paho                           208024
+#>  5 wpro                           115488
+#>  6 radnucnonelist                 109946
+#>  7 emro                            94203
+#>  8 usa                             91441
+#>  9 italy                           61976
+#> 10 implantrisks                    51553
 ```
 
 # Limitations
 
 This package is experimental and has not undergone rigorous testing to verify the correctness of the constructed queries. Use at your own risk.
 
-The package has been written to cover a large number of immediate use cases. However, there are many additional features and parameters of Elasticsearch that could be exposed through this interface in the future.
-
-# Extending
-
-```r
-fq_selectable_fields <- function() {
-```
-
+The package has been written to cover a large number of immediate use cases. However, there are many additional features and parameters of SOLR/Finder that could be exposed through this interface in the future.

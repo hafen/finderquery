@@ -64,8 +64,8 @@ fq_valid_duplicate <- function(con) {
 #' @importFrom xml2 xml_children as_list
 fq_get_valid_vals <- function(con, fld) {
   res <- fq_query_str(con,
-    paste0("op=search&q=dummy&facet.sort=index&facet.field=", 
-      fld, "&rows=0&facet=true&facet.limit=-1&native=true"),
+    paste0("op=search&q=dummy&facet.sort=index&facet.field=",
+      fld, "&facet=true&facet.limit=-1&native=true"),
     format = "xml") %>%
     fq_run()
 

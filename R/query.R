@@ -27,7 +27,7 @@ fq_get_query <- function(query) {
   check_class(query, c("query_fetch", "query_facet", "query_str"), "get_query")
 
   if (inherits(query, "query_str")) {
-    qry <- query$str
+    qry <- build_query_str(query)
   } else if (inherits(query, "query_fetch")) {
     qry <- build_query_fetch(query)
   } else {
@@ -46,7 +46,8 @@ run_query_str <- function(query) {
   } else {
     dest <- file.path(query$path, "output.xml")
   }
-  curl::curl_download(url = build_url(query$con$con, query$str),
+  str <- build_query_str(query)
+  curl::curl_download(url = build_url(query$con$con, str),
     destfile = dest)
 
   if (query$format == "file")
@@ -76,18 +77,13 @@ run_query_fetch <- function(query) {
     dest <- file.path(query$path, "output.xml")
   }
 
-  if (inherits())
-
   # by default it filters to last 30 days
   # so if no pubdate filter is specified, add really old lower bound
-  if (!any(grepl("^pubdate", unlist(query$filters))))
-    query <- query %>% fq_filter_pubdate(from = as.Date("1990-01-01"))
-
+  # if (!any(grepl("^pubdate", unlist(query$filters))))
+  #   query <- query %>% fq_filter_pubdate(from = as.Date("1990-01-01"))
   qry <- build_query_fetch(query)
-
   aa <- curl::curl_fetch_memory(build_url(query$con$con, qry))
-  if (aa$status_code != 200)
-    stop("There was an error with the query: ", qry)
+  check_query_error(qry, aa)
   bb <- rawToChar(aa$content)
 
   res <- xml2::read_xml(bb, options = c("NOBLANKS", "HUGE"))
@@ -110,6 +106,8 @@ run_query_fetch <- function(query) {
   }
 
   tot_hits <- tot
+  if (query$max >= 0)
+    tot_hits <- min(tot_hits, query$max)
 
   counter <- 1
   cum_hits <- as.integer(xml2::xml_text(xml2::xml_find_first(res, ".//rows")))
@@ -132,8 +130,7 @@ run_query_fetch <- function(query) {
     counter <- counter + 1
     qry2 <- gsub("(.*cursorMark=)\\*(.*)", paste0("\\1", enc(curs), "\\2"), qry)
     aa <- curl::curl_fetch_memory(build_url(query$con$con, qry2))
-    if (aa$status_code != 200)
-      stop("There was an error with the query: ", qry2)
+    check_query_error(qry2, aa)
     bb <- rawToChar(aa$content)
     res <- xml2::read_xml(bb, options = c("NOBLANKS", "HUGE"))
     res <- remove_fields(res, query)
@@ -171,25 +168,57 @@ run_query_fetch <- function(query) {
 
 # facet queries always read into memory and transform to a nice format
 #' @importFrom tibble tibble
+#' @importFrom rlang :=
 run_query_facet <- function(query) {
-  if (is.null(query$facet))
-    stop("Must specify faceting.")
+  if (inherits(query, "query_str") && query$type == "facet") {
+    qry <- build_query_str(query)
 
-  # by default it filters to last 30 days
-  # so if no pubdate filter is specified, add really old lower bound
-  if (!any(grepl("^pubdate", unlist(query$filters))))
-    query <- query %>% fq_filter_pubdate(from = as.Date("1990-01-01"))
+    # infer facet type
+    idx <- which(grepl("facet\\.field=", query$extra))
+    idx2 <- which(grepl("facet\\.range=", query$extra))
+    idx3 <- which(grepl("facet\\.pivot=", query$extra))
+    if (length(idx3) > 0) {
+      flds <- gsub("facet\\.pivot=(.*)", "\\1", query$extra[idx3])
+      facet_type <- "pivot"
+      facet_pivot <- flds[1]
+    } else if (length(idx2) > 0) {
+      flds <- gsub("facet\\.range=(.*)", "\\1", query$extra[idx2])
+      facet_type <- "field"
+      if (flds[1] %in% c("pubdate", "indexdate"))
+        facet_type <- "date_range"
+      facet_field <- flds[1]
+    } else if (length(idx) > 0) {
+      flds <- gsub("facet\\.field=(.*)", "\\1", query$extra[idx])
+      facet_type <- ifelse(length(idx) == 1, "field", "pivot")
+      facet_field <- flds[1]
+      facet_pivot <- paste(flds, collapse = ",")
+    } else {
+      stop("Could not infer faceting - try running with type='unknown'")
+    }
+  } else {
+    if (is.null(query$facet))
+      stop("Must specify faceting.")
 
-  qry <- build_query_facet(query)
+    # by default it filters to last 30 days
+    # so if no pubdate filter is specified, add really old lower bound
+    if (!any(grepl("^pubdate", unlist(query$filters))))
+      query <- query %>% fq_filter_pubdate(from = as.Date("1990-01-01"))
+
+    qry <- build_query_facet(query)
+
+    facet_type <- query$facet$type
+    facet_pivot <- query$facet$pivot
+    facet_field <- query$facet$field
+  }
+
   aa <- curl::curl_fetch_memory(build_url(query$con$con, qry))
-  if (aa$status_code != 200)
-    stop("There was an error with the query: ", qry)
+  check_query_error(qry, aa)
   bb <- rawToChar(aa$content)
 
   res <- xml2::read_xml(bb, options = c("NOBLANKS", "HUGE"))
 
-  if (query$facet$type == "field") {
-    fld <- query$facet$field
+  if (facet_type == "field") {
+    fld <- facet_field
     a <- res %>%
       xml2::xml_find_all(paste0("//lst[@name='", fld, "']")) %>%
       xml2::xml_children() %>%
@@ -200,8 +229,8 @@ run_query_facet <- function(query) {
       n = as.numeric(unlist(a))
     )
     names(res)[1] <- fld
-  } else if (query$facet$type == "date_range") {
-    fld <- query$facet$field
+  } else if (facet_type == "date_range") {
+    fld <- facet_field
     a <- res %>%
       xml2::xml_find_all(paste0("//lst[@name='", fld, "']")) %>%
       xml2::xml_child() %>%
@@ -214,8 +243,8 @@ run_query_facet <- function(query) {
     )
     res$tmp <- as.POSIXct(res$tmp)
     names(res)[1] <- fld
-  } else if (query$facet$type == "pivot") {
-    nm <- query$facet$pivot
+  } else if (facet_type == "pivot") {
+    nm <- facet_pivot
     tmp <- res %>%
       xml2::xml_find_all(paste0("//arr[@name='", nm, "']")) %>%
       xml2::xml_children() %>%
@@ -263,6 +292,22 @@ build_filter_string <- function(query) {
       paste(collapse = "&")
   }
 
+  str
+}
+
+build_query_str <- function(query) {
+  if (query$type == "unknown") {
+    str <- query$str
+  } else if (query$type == "fetch") {
+    str <- build_query_fetch(query)
+  } else if (query$type == "facet") {
+    qstr <- ifelse(is.null(query$filter_text), "*:*", query$filter_text)
+    str <- paste0("op=search&q=", qstr)
+    filter_str <- build_filter_string(query)
+    if (filter_str != "")
+      str <- paste0(str, "&", filter_str)
+    str <- paste(str, paste(query$extra, collapse = "&"), sep = "&")
+  }
   str
 }
 
