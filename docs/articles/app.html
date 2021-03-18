@@ -89,7 +89,8 @@
 <p>The REST API is built using <a href="https://www.rplumber.io">Plumber</a>.</p>
 <p>The web app is written using <a href="https://reactjs.org">React</a> and calls the API to build the query and download the documents.</p>
 <p><img src="app_screenshot.png"></p>
-<p>Note that “multiselect” text fields in the application are pre-populated with all of the unique values found in the data as of September 2020. In theory we could expose API endpoints that always get the latest values, but this would slow down the initial app load considerably. Instead, we can update these values every few months or on demand.</p>
+<p>Note that “multiselect” text fields in the application are pre-populated with all of the unique values found in the data as of March 2021. In theory we could expose API endpoints that always get the latest values, but this would slow down the initial app load considerably. Instead, we can update these values every few days/weeks/months or on demand.</p>
+<p>To make updating the values more convenient, <a href="https://github.com/hafen/finderquery/blob/master/app/generate_options.R">an R script</a> is available that can be run that uses the finderquery R package to get all of the valid values and overwrite them to the <a href="https://github.com/hafen/finderquery/blob/master/app/src/options.js">options.js</a> file that is used by the application.</p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

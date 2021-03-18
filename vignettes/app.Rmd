@@ -22,4 +22,6 @@ The web app is written using [React](https://reactjs.org) and calls the API to b
 
 ![](app_screenshot.png)
 
-Note that "multiselect" text fields in the application are pre-populated with all of the unique values found in the data as of September 2020. In theory we could expose API endpoints that always get the latest values, but this would slow down the initial app load considerably. Instead, we can update these values every few months or on demand.
+Note that "multiselect" text fields in the application are pre-populated with all of the unique values found in the data as of March 2021. In theory we could expose API endpoints that always get the latest values, but this would slow down the initial app load considerably. Instead, we can update these values every few days/weeks/months or on demand.
+
+To make updating the values more convenient, [an R script](https://github.com/hafen/finderquery/blob/master/app/generate_options.R) is available that can be run that uses the finderquery R package to get all of the valid values and overwrite them to the [options.js](https://github.com/hafen/finderquery/blob/master/app/src/options.js) file that is used by the application.
